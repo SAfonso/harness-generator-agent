@@ -7,6 +7,15 @@ completamente personalizado y listo para usar con Claude Code.
 
 ---
 
+## Metodología
+
+- **SDD:** este documento ES el spec. Nada se implementa sin estar definido aquí primero.
+  Si necesitas algo que no está en el spec, actualiza el spec **antes** de escribir código
+- **TDD:** cada función, tool y agente tiene sus tests escritos antes de su implementación
+- **Orden obligatorio en cada tarea:** actualizar SPEC → escribir test → implementar → commit
+
+---
+
 ## Arquitectura general
 
 ```
@@ -20,7 +29,9 @@ src/
 │   ├── classify_project.py   # Clasifica tipo de proyecto
 │   ├── assess_input.py       # Mide densidad de información del input
 │   ├── render_template.py    # Renderiza plantillas con contexto
-│   └── validate_harness.py   # Verifica coherencia entre ficheros
+│   ├── validate_harness.py   # Verifica coherencia entre ficheros
+│   └── update_spec.py        # Actualiza una sección del SPEC.md cuando el leader
+│                             # detecta un fallo de diseño durante la ejecución del harness
 ├── templates/
 │   ├── base/                 # Plantillas compartidas por todos los tipos
 │   │   ├── CLAUDE.md.j2
@@ -146,6 +157,10 @@ del harness: cuántos agentes, qué roles, qué modos, qué reglas.
 6. Genera lista de reglas específicas del harness
 7. Devuelve `HarnessSpec` completa
 
+**Tools disponibles:**
+- `classify_project()`
+- `update_spec()`
+
 **Reglas de decisión por tipo:**
 
 | Tipo | Agentes mínimos | Consideraciones |
@@ -192,6 +207,37 @@ del harness: cuántos agentes, qué roles, qué modos, qué reglas.
   con los ficheros en .claude/agents/
 - El modo de cada agente debe aparecer explícito en su fichero
 ```
+
+---
+
+### `update_spec` — tool del leader
+
+**Responsabilidad:** Actualizar una sección concreta del SPEC.md cuando el reviewer
+detecta un fallo de diseño y el usuario aprueba el cambio.
+
+**Cuándo se usa:**
+- El reviewer rechaza un output por fallo de diseño (no de implementación)
+- El leader escala al usuario con el rechazo y una propuesta de cambio
+- El usuario aprueba el cambio
+
+**Flujo:**
+1. `reviewer` rechaza y clasifica el rechazo como "fallo de diseño"
+2. `leader` evalúa: ¿es fallo de implementación o de diseño?
+3. Si fallo de diseño → escala al usuario con propuesta concreta de cambio de SPEC
+4. Usuario aprueba → `leader` llama a `update_spec(section, new_content)`
+5. `update_spec` actualiza `SPEC.md` y regenera los tests afectados
+6. `leader` relanza `implementer` con el SPEC actualizado
+
+**Firma:**
+```python
+update_spec(section: str, new_content: str, spec_path: Path) -> bool
+```
+
+**Reglas:**
+- Solo el `leader` puede llamar a esta tool, nunca el `reviewer` directamente
+- Cualquier cambio de SPEC requiere aprobación explícita del usuario
+- Después de actualizar SPEC, los tests afectados se marcan como `pending` de revisión
+- Se registra el cambio en `progress/history.md` con timestamp y razón
 
 ---
 
@@ -272,6 +318,20 @@ punto de partida, no como verdad absoluta. Revisar en cada versión del spec.
 
 ---
 
+## Testing
+
+- Framework: **pytest**
+- Los tests viven en `tests/` con el prefijo `test_` (ej: `tests/test_classify_project.py`)
+- Cada tool en `src/tools/` tiene su fichero de tests **antes** de implementar los agentes
+- Cada agente en `src/agents/` tiene su fichero de tests **antes** de implementar `main.py`
+- Convenio **TDD**: test primero, implementación después — sin excepciones
+- Para probar funciones que tocan el filesystem usar el fixture `tmp_path` de pytest
+  (no crear ficheros en el repo ni en `/tmp` a mano)
+- Para sobreescribir variables a nivel de módulo (ej: `TEMPLATES_DIR`) usar `monkeypatch`
+  de pytest en lugar de modificar la función original
+
+---
+
 ## Criterios de aceptación del proyecto
 
 1. Dado un input de tipo `data_pipeline`, el harness generado es distinto
@@ -289,4 +349,4 @@ punto de partida, no como verdad absoluta. Revisar en cada versión del spec.
 - Soporte para más de 6 agentes en el harness generado
 - Personalización de plantillas por el usuario
 - Interfaz web
-- Tests automatizados (se añaden en v2)
+- `update_spec` operativo (definido en spec, implementación en v2)

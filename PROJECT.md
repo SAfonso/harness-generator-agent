@@ -13,6 +13,15 @@ que mejor se adaptan a tu caso concreto.
 - No es un chatbot de propósito general
 - No sustituye al criterio del usuario — lo reta y lo complementa
 
+## Filosofía de desarrollo
+
+- **SDD (Spec Driven Development):** ningún fichero de código se escribe sin un spec
+  previo que defina qué hace, qué recibe y qué devuelve
+- **TDD (Test Driven Development):** ninguna implementación sin test previo. El test
+  define el contrato, la implementación lo cumple
+- Estas dos reglas no son opcionales — son la forma de trabajar en este proyecto
+- **Orden obligatorio:** SPEC → TEST → IMPLEMENT → COMMIT
+
 ## Entregable concreto
 
 Un directorio `harness/` listo para usar en cualquier proyecto, con:
@@ -132,3 +141,5 @@ harness/ listo para usar
 - Una tarea a la vez en `in_progress`
 - `SPEC.md` antes de implementar cualquier agente
 - Commit después de cada agente funcional
+- **TDD**: test antes de implementación, siempre
+- **pytest** como framework de testing
