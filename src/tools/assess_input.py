@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from typing import Literal
 
+# TODO v2: reemplazar detección por keywords con clasificación LLM
+# para cubrir sinónimos, otros idiomas y expresiones no previstas
+
 DIMENSIONS = [
     "project_type",
     "stack",
