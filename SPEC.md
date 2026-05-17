@@ -104,6 +104,17 @@ class LLMConfig:
                                      # vacío si strategy == "recommended"
 ```
 
+### `IntakeResult` — salida del intake_agent
+
+```python
+class IntakeResult(BaseModel):
+    spec: HarnessSpec | None         # None si falta información crítica
+    status: Literal["complete", "needs_input"]
+    questions: list[str]             # preguntas pendientes si status == "needs_input"
+```
+
+Importado desde `src.models.harness_spec` junto con `HarnessSpec`, `AgentRole` y `LLMConfig`.
+
 ---
 
 ## Agentes
@@ -127,7 +138,9 @@ pueda decidir la estructura del harness sin ambigüedades.
    - Opción 1 → pide qué modelo
    - Opción 2 → asigna según tabla de recomendaciones (sin preguntar más)
    - Opción 3 → muestra tabla y espera decisión por agente
-7. Devuelve `HarnessSpec` parcial (sin `agent_roles`, `rules`, `harness_complexity`)
+7. Devuelve `IntakeResult` con:
+   - `status="complete"` y `spec` rellena si las 7 dimensiones están cubiertas
+   - `status="needs_input"` y `questions` con las dimensiones faltantes si el input es escaso
 
 **Condición de salida:** Las 7 dimensiones están cubiertas (puede ser por respuesta
 explícita o por inferencia razonada y documentada).
@@ -138,7 +151,9 @@ explícita o por inferencia razonada y documentada).
 - Si el stack no tiene sentido para el tipo de proyecto, dilo
 - Si los criterios de aceptación son subjetivos, recházalos y pide objetivos
 - Si el tiempo disponible no es realista para lo descrito, adviértelo
-- No des la razón por darla — el usuario prefiere ser retado
+- No valides por defecto — si algo no tiene sentido o está poco pensado,
+  dilo con criterio: explica qué problema concreto ves y propón una alternativa
+  con su razón. El objetivo es guiar, no confrontar
 ```
 
 ---

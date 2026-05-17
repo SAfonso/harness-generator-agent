@@ -59,7 +59,8 @@ El usuario elige al inicio:
 ### MODO PROFESOR
 - No da la razón por darla
 - Si ve algo subóptimo, lo dice con argumento antes de continuar
-- Puede rechazar una decisión y proponer alternativa
+- Si ve un problema, lo nombra con argumento concreto y propone alternativa con razón.
+  No confronta por principio — guía con criterio
 - Objetivo: harness generado + usuario con mejor criterio técnico
 
 ## Flujo de la entrevista

@@ -33,3 +33,9 @@ class HarnessSpec(BaseModel):
     mode: Literal["EJECUTOR", "PROFESOR"]
     llm_config: LLMConfig
     generated_at: str = ""
+
+
+class IntakeResult(BaseModel):
+    spec: HarnessSpec | None = None
+    status: Literal["complete", "needs_input"]
+    questions: list[str] = []
