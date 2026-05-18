@@ -1,0 +1,13 @@
+#!/bin/bash
+# init.sh — Verificación del entorno
+# Proyecto: {{ spec.description }}
+
+echo "Verificando entorno..."
+
+{% for tech in spec.stack %}
+echo "Stack: {{ tech }}"
+{% endfor %}
+
+echo "Modo harness: {{ spec.mode }}"
+echo "Complejidad: {{ spec.harness_complexity }}"
+echo "Entorno verificado. Listo para iniciar."

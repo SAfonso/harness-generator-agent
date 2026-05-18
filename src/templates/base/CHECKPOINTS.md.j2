@@ -1,0 +1,17 @@
+# CHECKPOINTS.md — Criterios de validación
+
+## Proyecto
+{{ spec.description }}
+
+## Criterios de aceptación
+{% for criterion in spec.acceptance_criteria %}
+- {{ criterion }}
+{% endfor %}
+
+## Reglas del harness
+{% for rule in spec.rules %}
+- {{ rule }}
+{% endfor %}
+
+## Definición de done
+Una tarea está done cuando el reviewer la aprueba contra los criterios anteriores.

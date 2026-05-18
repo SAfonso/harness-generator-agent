@@ -1,0 +1,36 @@
+# CLAUDE.md — Harness de {{ spec.project_type }}
+
+## Modo activo
+{{ spec.mode }}
+
+## Descripción del proyecto
+{{ spec.description }}
+
+## Complejidad del harness
+{{ spec.harness_complexity }}
+
+## Stack
+{% for tech in spec.stack %}
+- {{ tech }}
+{% endfor %}
+
+## Reglas globales
+{% for rule in spec.rules %}
+- {{ rule }}
+{% endfor %}
+
+## Agentes disponibles
+{% for role in spec.agent_roles %}
+- {{ role.name }} — modo {{ role.mode }}
+{% endfor %}
+
+## Instrucciones de inicio
+1. Lee AGENTS.md para conocer el mapa de agentes
+2. Lee CHECKPOINTS.md para conocer los criterios de aceptación
+3. Lee feature_list.json para ver el backlog
+4. Ejecuta init.sh para verificar el entorno
+5. El leader asigna la primera tarea al implementer
+
+## Notas
+- CLAUDE.md es el último fichero generado — es coherente con todos los anteriores
+- El modo {{ spec.mode }} está grabado en todos los subagentes

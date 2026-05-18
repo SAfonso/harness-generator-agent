@@ -44,7 +44,8 @@ harness/
         ├── analysis.md        # modo: JUEZ
         ├── generator.md       # modo: ESCRIBANO
         ├── implementer.md     # modo: BISTURÍ
-        └── reviewer.md        # modo: FISCAL
+        ├── reviewer.md        # modo: FISCAL
+        └── tester.md          # modo: QA (solo proyectos de tipo agent)
 ```
 
 ## Modos de operación del agente
@@ -115,6 +116,7 @@ harness/ listo para usar
 | generator_agent | ESCRIBANO | Coherencia entre ficheros por encima de todo |
 | implementer | BISTURÍ | Scope estricto, mínimo viable verificable |
 | reviewer | FISCAL | Contrasta contra contrato, no busca bugs |
+| tester | QA | Diseña y ejecuta tests para proyectos de tipo agent |
 
 ## Criterios de éxito del proyecto
 

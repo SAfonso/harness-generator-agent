@@ -1,0 +1,22 @@
+# AGENTS.md — Mapa de agentes
+
+## Proyecto
+{{ spec.description }}
+
+## Modo del harness
+{{ spec.mode }}
+
+## Agentes
+
+{% for role in spec.agent_roles %}
+### {{ role.name }} — modo {{ role.mode }}
+**Scope:** {{ role.scope }}
+**Tools:** {{ role.tools | join(', ') if role.tools else 'ninguna definida' }}
+
+{% endfor %}
+
+## Flujo
+{% for role in spec.agent_roles %}
+{{ loop.index }}. {{ role.name }}{% if not loop.last %} →{% endif %}
+
+{% endfor %}

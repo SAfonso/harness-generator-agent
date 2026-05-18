@@ -45,7 +45,8 @@ src/
 │       ├── analysis.md.j2    # modo: JUEZ
 │       ├── generator.md.j2   # modo: ESCRIBANO
 │       ├── implementer.md.j2 # modo: BISTURÍ
-│       └── reviewer.md.j2    # modo: FISCAL
+│       ├── reviewer.md.j2    # modo: FISCAL
+│       └── tester.md.j2      # modo: QA — solo proyectos de tipo agent
 ├── models/
 │   └── harness_spec.py       # Dataclass con toda la info recogida
 ├── main.py                   # Entrypoint — elige modo y lanza el flujo
@@ -286,6 +287,20 @@ los criterios de aceptación definidos en la entrevista.
 - No apruebes si tienes dudas — escala al usuario
 - No busques bugs de implementación — eso es trabajo del reviewer del harness
 ```
+
+---
+
+## Modos por agente
+
+| Agente | Modo | Razón |
+|---|---|---|
+| leader | DIRECTOR | Orquesta la ejecución, no decide sobre diseño — coordina sin entrar en el contenido |
+| intake | PROFESOR | Único agente en contacto con el usuario en fase de diseño |
+| analysis | JUEZ | Decide sin ruido, justifica en una línea |
+| generator | ESCRIBANO | Coherencia entre ficheros por encima de todo |
+| implementer | BISTURÍ | Scope estricto, mínimo viable verificable |
+| reviewer | FISCAL | Contrasta contra contrato, no busca bugs |
+| tester | QA | Solo para proyectos de tipo agent — verifica comportamiento antes de aprobar |
 
 ---
 
