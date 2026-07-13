@@ -30,17 +30,25 @@ run_analysis(spec: HarnessSpec) -> HarnessSpec
 - `classify_project()`
 - `update_spec()` (v2)
 
-## Reglas de decisión por tipo
+## Reglas de composición de agentes
 
-Los datos viven en `src/config.py` (`MIN_AGENTS_BY_TYPE`):
+**El conjunto de agentes del harness es fijo — no se inventan agentes nuevos por
+tipo de proyecto.** Los roles definidos en la tabla de modos de `SPEC.md` son los
+mínimos que están **siempre**, sea cual sea el tipo:
 
-| Tipo | Agentes mínimos | Consideraciones |
+| Agente | Modo | Presencia |
 |---|---|---|
-| data_pipeline | implementer, reviewer | Añadir data_validator si hay transformaciones complejas |
-| api | implementer, reviewer | Añadir security_checker si hay auth |
-| web | implementer, reviewer | Añadir ux_checker si hay criterios visuales |
-| agent | implementer, reviewer, tester | Siempre añadir tester para loops de agente |
-| cli | implementer, reviewer | Harness más simple por defecto |
+| leader | DIRECTOR | Siempre — orquesta la ejecución del harness |
+| implementer | BISTURÍ | Siempre |
+| reviewer | FISCAL | Siempre |
+| tester | QA | Solo proyectos de tipo `agent` (según su propia definición en la tabla de modos) |
+
+Los datos viven en `src/config.py` (`MIN_AGENTS_BY_TYPE` — todas las entradas
+contienen el núcleo fijo; el tipo `agent` añade `tester`).
+
+> Decisión de diseño (2026-07-13): descartada la idea inicial de agentes extra
+> por tipo (`data_validator`, `security_checker`, `ux_checker`). El harness no
+> añade agentes distintos de los definidos.
 
 ## Reglas de modo JUEZ
 

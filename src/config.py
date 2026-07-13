@@ -27,12 +27,16 @@ LLM_RECOMMENDATIONS = {
     "reviewer":    {"western": "gemini-2.5-flash", "chinese": "deepseek-r1"},
 }
 
-# Agentes mínimos por tipo de proyecto
+# Agentes mínimos por tipo de proyecto.
+# El núcleo (leader, implementer, reviewer) es fijo y está SIEMPRE — no se
+# añaden agentes distintos de los definidos en AGENT_MODES. El tipo "agent"
+# suma tester según su propia definición.
+_CORE_AGENTS = ["leader", "implementer", "reviewer"]
 MIN_AGENTS_BY_TYPE = {
-    "data_pipeline": ["implementer", "reviewer"],
-    "api":           ["implementer", "reviewer"],
-    "web":           ["implementer", "reviewer"],
-    "agent":         ["implementer", "reviewer", "tester"],
-    "cli":           ["implementer", "reviewer"],
-    "other":         ["implementer", "reviewer"],
+    "data_pipeline": _CORE_AGENTS,
+    "api":           _CORE_AGENTS,
+    "web":           _CORE_AGENTS,
+    "agent":         _CORE_AGENTS + ["tester"],
+    "cli":           _CORE_AGENTS,
+    "other":         _CORE_AGENTS,
 }

@@ -7,6 +7,7 @@ from src.models.harness_spec import AgentRole, HarnessSpec
 from src.tools.classify_project import classify_project
 
 _SCOPE_BY_NAME = {
+    "leader":      "Orquesta la ejecución del harness y escala al usuario cuando toca",
     "implementer": "Implementa las tareas del backlog",
     "reviewer":    "Revisa y valida el output contra los criterios de aceptación",
     "tester":      "Diseña y ejecuta tests para verificar el comportamiento",

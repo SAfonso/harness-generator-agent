@@ -24,6 +24,8 @@ def _make_complete_spec(**overrides) -> HarnessSpec:
         ],
         llm_config=LLMConfig(strategy="same", default_model="gpt-4o"),
         agent_roles=[
+            AgentRole(name="leader", mode="DIRECTOR",
+                      scope="Orquesta la ejecución", tools=[]),
             AgentRole(name="implementer", mode="BISTURÍ",
                       scope="Implementa las tareas", tools=[]),
             AgentRole(name="reviewer", mode="FISCAL",
@@ -45,6 +47,7 @@ def test_generator_creates_all_expected_files_for_api_project(tmp_path: Path):
         tmp_path / "feature_list.json",
         tmp_path / "init.sh",
         tmp_path / "CLAUDE.md",
+        tmp_path / ".claude" / "agents" / "leader.md",
         tmp_path / ".claude" / "agents" / "implementer.md",
         tmp_path / ".claude" / "agents" / "reviewer.md",
     ]

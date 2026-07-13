@@ -30,9 +30,14 @@ def _assert_common_invariants(spec: HarnessSpec) -> None:
         assert role.mode
         assert role.scope
         assert isinstance(role.tools, list)
+    # El núcleo fijo está siempre, sea cual sea el tipo de proyecto
+    by_name = {r.name: r for r in spec.agent_roles}
+    assert "leader" in by_name and by_name["leader"].mode == "DIRECTOR"
+    assert "implementer" in by_name and by_name["implementer"].mode == "BISTURÍ"
+    assert "reviewer" in by_name and by_name["reviewer"].mode == "FISCAL"
 
 
-def test_minimal_cli_short_time_is_simple_with_two_agents():
+def test_minimal_cli_short_time_is_simple_with_core_agents():
     partial = _make_partial_spec(project_type="cli", time_available="1 día")
 
     result = run_analysis(partial)
@@ -40,9 +45,7 @@ def test_minimal_cli_short_time_is_simple_with_two_agents():
     _assert_common_invariants(result)
     assert result.harness_complexity == "simple"
     names = [r.name for r in result.agent_roles]
-    assert "implementer" in names
-    assert "reviewer" in names
-    assert len(result.agent_roles) == 2
+    assert names == ["leader", "implementer", "reviewer"]
 
 
 def test_full_api_spec_is_standard_with_rules():
@@ -81,7 +84,5 @@ def test_agent_project_always_adds_tester():
 
     _assert_common_invariants(result)
     names = [r.name for r in result.agent_roles]
-    assert "implementer" in names
-    assert "reviewer" in names
     assert "tester" in names
-    assert len(result.agent_roles) == 3
+    assert len(result.agent_roles) == 4
