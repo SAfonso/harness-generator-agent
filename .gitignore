@@ -53,3 +53,6 @@ logs/
 
 # Generated harness output
 harness/
+
+# graphify knowledge graph (artefacto regenerable con /graphify)
+graphify-out/
