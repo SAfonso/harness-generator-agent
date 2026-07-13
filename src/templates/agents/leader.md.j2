@@ -7,7 +7,7 @@ Orquesta la ejecución del harness. No decide sobre diseño — coordina sin ent
 {{ spec.description }}
 
 ## Agentes bajo su coordinación
-{% for role in spec.agent_roles %}
+{% for role in spec.agent_roles if role.name != "leader" %}
 - {{ role.name }} ({{ role.mode }})
 {% endfor %}
 
