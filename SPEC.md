@@ -22,7 +22,7 @@ completamente personalizado y listo para usar con Claude Code.
 | generator_agent (ESCRIBANO) | `specs/generator_agent.md` | `errors/generator_agent.md` | `src/agents/generator_agent.py` | `tests/test_generator_agent.py` |
 | validator_agent (FISCAL) | `specs/validator_agent.md` | `errors/validator_agent.md` | `src/agents/validator_agent.py` | `tests/test_validator_agent.py` |
 | Plantillas | `specs/templates.md` | `errors/templates.md` | `src/templates/` | vía render_template |
-| Entrypoint | `specs/main.md` | `errors/main.md` | `src/main.py` ⚠️ pendiente | ⚠️ pendiente |
+| Entrypoint | `specs/main.md` | `errors/main.md` | `src/main.py` | `tests/test_main.py` |
 
 Errores transversales (≥ 2 módulos o entorno): `errors/ERRORS.md`, que además
 define el protocolo de gestión de errores.
