@@ -31,4 +31,16 @@ configuración, pytest, imports, git). Los errores propios de un módulo van en
 
 <!-- Entradas debajo de esta línea, la más reciente arriba -->
 
-*Sin errores registrados todavía.*
+## [2026-07-13] tester recibía modo EJECUTOR en vez de QA
+**Síntoma:** el pipeline completo (`run_pipeline`) rechazaba harnesses de proyectos
+tipo `agent` con `Check 2 falló: mismatch: tester(EJECUTOR)` — el fichero
+`tester.md` no declaraba el modo que decía su `AgentRole`.
+**Causa:** `AGENT_MODES` en `src/config.py` no tenía entrada para `tester`, y
+`_build_agent_roles()` (analysis_agent) usa el fallback `AGENT_MODES.get(name,
+"EJECUTOR")` — que además es un modo de harness, no de agente. El config estaba
+desincronizado de la tabla "Modos por agente" de `SPEC.md` (tester → QA).
+**Solución:** añadir `"tester": "QA"` a `AGENT_MODES` en `src/config.py`.
+**Prevención:** al añadir un rol a `MIN_AGENTS_BY_TYPE`, añadir siempre su modo a
+`AGENT_MODES` en el mismo commit — las dos tablas deben cubrir los mismos nombres.
+Solo los tests E2E del pipeline detectan esta desincronización (los del generator
+comprueban existencia de ficheros, no coherencia de modos).

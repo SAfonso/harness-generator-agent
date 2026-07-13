@@ -15,6 +15,7 @@ AGENT_MODES = {
     "generator":   "ESCRIBANO",
     "implementer": "BISTURÍ",
     "reviewer":    "FISCAL",
+    "tester":      "QA",
 }
 
 # Modelos LLM recomendados por agente
