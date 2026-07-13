@@ -20,7 +20,7 @@ completamente personalizado y listo para usar con Claude Code.
 | intake_agent (PROFESOR) | `specs/intake_agent.md` | `errors/intake_agent.md` | `src/agents/intake_agent.py` | `tests/test_intake_agent.py` |
 | analysis_agent (JUEZ) | `specs/analysis_agent.md` | `errors/analysis_agent.md` | `src/agents/analysis_agent.py` | `tests/test_analysis_agent.py` |
 | generator_agent (ESCRIBANO) | `specs/generator_agent.md` | `errors/generator_agent.md` | `src/agents/generator_agent.py` | `tests/test_generator_agent.py` |
-| validator_agent (FISCAL) | `specs/validator_agent.md` | `errors/validator_agent.md` | `src/agents/validator_agent.py` ⚠️ pendiente | ⚠️ pendiente |
+| validator_agent (FISCAL) | `specs/validator_agent.md` | `errors/validator_agent.md` | `src/agents/validator_agent.py` | `tests/test_validator_agent.py` |
 | Plantillas | `specs/templates.md` | `errors/templates.md` | `src/templates/` | vía render_template |
 | Entrypoint | `specs/main.md` | `errors/main.md` | `src/main.py` ⚠️ pendiente | ⚠️ pendiente |
 
