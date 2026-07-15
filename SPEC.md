@@ -66,6 +66,7 @@ como estado compartido que viaja por los cuatro agentes.
 | Agente | Modo | Razón |
 |---|---|---|
 | leader | DIRECTOR | Orquesta la ejecución, no decide sobre diseño — coordina sin entrar en el contenido |
+| planner | ARQUITECTO | Descompone objetivos en tareas atómicas y les asigna complejidad — diseña el plan, no lo ejecuta |
 | intake | PROFESOR | Único agente en contacto con el usuario en fase de diseño |
 | analysis | JUEZ | Decide sin ruido, justifica en una línea |
 | generator | ESCRIBANO | Coherencia entre ficheros por encima de todo |

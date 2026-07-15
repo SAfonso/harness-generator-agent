@@ -33,6 +33,7 @@ def _assert_common_invariants(spec: HarnessSpec) -> None:
     # El núcleo fijo está siempre, sea cual sea el tipo de proyecto
     by_name = {r.name: r for r in spec.agent_roles}
     assert "leader" in by_name and by_name["leader"].mode == "DIRECTOR"
+    assert "planner" in by_name and by_name["planner"].mode == "ARQUITECTO"
     assert "implementer" in by_name and by_name["implementer"].mode == "BISTURÍ"
     assert "reviewer" in by_name and by_name["reviewer"].mode == "FISCAL"
 
@@ -45,7 +46,7 @@ def test_minimal_cli_short_time_is_simple_with_core_agents():
     _assert_common_invariants(result)
     assert result.harness_complexity == "simple"
     names = [r.name for r in result.agent_roles]
-    assert names == ["leader", "implementer", "reviewer"]
+    assert names == ["leader", "planner", "implementer", "reviewer"]
 
 
 def test_full_api_spec_is_standard_with_rules():
@@ -85,4 +86,14 @@ def test_agent_project_always_adds_tester():
     _assert_common_invariants(result)
     names = [r.name for r in result.agent_roles]
     assert "tester" in names
-    assert len(result.agent_roles) == 4
+    assert len(result.agent_roles) == 5
+
+
+def test_rules_include_atomic_tasks_and_model_by_complexity():
+    partial = _make_partial_spec(project_type="api", time_available="2 semanas")
+
+    result = run_analysis(partial)
+
+    rules_text = " ".join(result.rules).lower()
+    assert "atómica" in rules_text or "atomica" in rules_text
+    assert "complejidad" in rules_text

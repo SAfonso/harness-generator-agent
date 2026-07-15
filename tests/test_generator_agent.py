@@ -26,6 +26,8 @@ def _make_complete_spec(**overrides) -> HarnessSpec:
         agent_roles=[
             AgentRole(name="leader", mode="DIRECTOR",
                       scope="Orquesta la ejecución", tools=[]),
+            AgentRole(name="planner", mode="ARQUITECTO",
+                      scope="Descompone en tareas atómicas", tools=[]),
             AgentRole(name="implementer", mode="BISTURÍ",
                       scope="Implementa las tareas", tools=[]),
             AgentRole(name="reviewer", mode="FISCAL",
@@ -48,12 +50,31 @@ def test_generator_creates_all_expected_files_for_api_project(tmp_path: Path):
         tmp_path / "init.sh",
         tmp_path / "CLAUDE.md",
         tmp_path / ".claude" / "agents" / "leader.md",
+        tmp_path / ".claude" / "agents" / "planner.md",
         tmp_path / ".claude" / "agents" / "implementer.md",
         tmp_path / ".claude" / "agents" / "reviewer.md",
     ]
     for path in expected:
         assert path.exists(), f"missing generated file: {path}"
         assert path.is_file()
+
+
+def test_feature_list_tasks_are_atomic_with_complexity(tmp_path: Path):
+    import json
+
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    tasks = json.loads((tmp_path / "feature_list.json").read_text(encoding="utf-8"))
+    for task in tasks:
+        assert task.get("complejidad") in ("alta", "media", "baja"), (
+            f"task {task.get('id')} sin complejidad válida"
+        )
+    # El entregable no entra como tarea de implementación monolítica:
+    # entra como tarea de descomposición del planner
+    titles = " ".join(t["title"].lower() for t in tasks)
+    assert "descompon" in titles
 
 
 def test_generator_produces_no_empty_files(tmp_path: Path):

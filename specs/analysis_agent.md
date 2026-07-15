@@ -39,6 +39,7 @@ mínimos que están **siempre**, sea cual sea el tipo:
 | Agente | Modo | Presencia |
 |---|---|---|
 | leader | DIRECTOR | Siempre — orquesta la ejecución del harness |
+| planner | ARQUITECTO | Siempre — descompone objetivos en tareas atómicas y asigna complejidad |
 | implementer | BISTURÍ | Siempre |
 | reviewer | FISCAL | Siempre |
 | tester | QA | Solo proyectos de tipo `agent` (según su propia definición en la tabla de modos) |
@@ -49,6 +50,20 @@ contienen el núcleo fijo; el tipo `agent` añade `tester`).
 > Decisión de diseño (2026-07-13): descartada la idea inicial de agentes extra
 > por tipo (`data_validator`, `security_checker`, `ux_checker`). El harness no
 > añade agentes distintos de los definidos.
+
+## Reglas generadas: tareas atómicas y modelo por complejidad
+
+`_build_rules()` incluye siempre (además de las reglas por complejidad del harness):
+
+- **Tareas atómicas:** cada tarea del backlog es una unidad corta y acotada con un
+  único entregable verificable. Objetivos amplios ("hazme el front") no entran al
+  backlog: el planner los descompone primero.
+- **Modelo por complejidad de tarea:** cada tarea lleva `complejidad`
+  (`alta | media | baja`) asignada por el planner, y el leader la lanza con el
+  modelo del tier correspondiente (ver `MODEL_TIER_BY_COMPLEXITY` en `src/config.py`):
+  `alta` (planificar, documentar, diseñar) → modelo potente; `media`
+  (implementación estándar) → modelo intermedio; `baja` (tareas mecánicas)
+  → modelo económico.
 
 ## Reglas de modo JUEZ
 

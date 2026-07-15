@@ -8,6 +8,7 @@ from src.tools.classify_project import classify_project
 
 _SCOPE_BY_NAME = {
     "leader":      "Orquesta la ejecución del harness y escala al usuario cuando toca",
+    "planner":     "Descompone objetivos en tareas atómicas y asigna complejidad a cada una",
     "implementer": "Implementa las tareas del backlog",
     "reviewer":    "Revisa y valida el output contra los criterios de aceptación",
     "tester":      "Diseña y ejecuta tests para verificar el comportamiento",
@@ -48,14 +49,24 @@ def _build_agent_roles(project_type: str) -> list[AgentRole]:
     ]
 
 
+_UNIVERSAL_RULES = [
+    "Las tareas del backlog son atómicas: cortas, acotadas y con un único "
+    "entregable verificable — nada de objetivos amplios tipo 'hazme el front'; "
+    "esos los descompone el planner antes de entrar al backlog",
+    "Cada tarea lleva complejidad (alta | media | baja) asignada por el planner, "
+    "y se lanza con el modelo de su tier: alta → potente, media → intermedio, "
+    "baja → económico",
+]
+
+
 def _build_rules(complexity: str) -> list[str]:
     if complexity == "simple":
-        return [
+        return _UNIVERSAL_RULES + [
             "Una tarea a la vez en in_progress",
             "Solo el reviewer puede marcar done",
             "Máximo 2 rechazos antes de escalar al usuario",
         ]
-    return [
+    return _UNIVERSAL_RULES + [
         "Una tarea a la vez en in_progress",
         "Solo el reviewer puede marcar done",
         "Máximo 3 rechazos antes de escalar al usuario",

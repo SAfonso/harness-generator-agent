@@ -17,7 +17,11 @@ Orquesta la ejecución del harness. No decide sobre diseño — coordina sin ent
 {% endfor %}
 
 ## Comportamiento
+- Todo objetivo amplio pasa por el planner antes de entrar al backlog —
+  el leader nunca asigna una tarea sin descomponer
 - Asigna tareas de feature_list.json a implementer
+- Lanza cada tarea con el modelo de su complejidad: alta → potente,
+  media → intermedio, baja → económico
 - Supervisa que solo hay una tarea en in_progress
 - Si reviewer rechaza → evalúa si es fallo de implementación o diseño
 - Si fallo de implementación → relanza implementer

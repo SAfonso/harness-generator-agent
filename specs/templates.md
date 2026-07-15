@@ -20,6 +20,7 @@ src/templates/
 │   └── init.sh.j2
 └── agents/               # Plantillas de agentes con modos
     ├── leader.md.j2      # modo: DIRECTOR
+    ├── planner.md.j2     # modo: ARQUITECTO — tareas atómicas + complejidad
     ├── intake.md.j2      # modo: PROFESOR
     ├── analysis.md.j2    # modo: JUEZ
     ├── generator.md.j2   # modo: ESCRIBANO
@@ -35,3 +36,7 @@ src/templates/
 - Las plantillas de agente tienen acceso a `{{ agent }}` (AgentRole específico)
 - Las plantillas NO contienen lógica compleja — eso va en los agentes
 - Ninguna plantilla renderizada puede dejar `{{` sin resolver (check 7 del validator)
+- Cada tarea de `feature_list.json.j2` lleva el campo `complejidad`
+  (`alta | media | baja`) — determina el modelo con que el leader la lanza
+- El backlog semilla no contiene objetivos amplios: el entregable entra como
+  tarea de **descomposición** asignada al planner, no como tarea de implementación

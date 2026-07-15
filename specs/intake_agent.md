@@ -61,6 +61,7 @@ Los datos viven en `src/config.py` (`LLM_RECOMMENDATIONS`). Tabla de referencia
 |---|---|---|---|---|
 | intake | Conversación crítica, detección de ambigüedad | GPT-4o | Qwen2.5-72B | Matiz conversacional, capacidad de retar sin ser hostil |
 | analysis | Razonamiento estructural, decisiones con criterios | o3-mini / Gemini 2.5 Pro | DeepSeek-R1 | Optimizados para razonamiento puro |
+| planner | Descomposición en tareas atómicas, estimación de complejidad | o3-mini / Gemini 2.5 Pro | DeepSeek-R1 | Planificar es razonamiento puro, no generación |
 | generator | Generación coherente, instruction-following preciso | Claude Sonnet | Qwen2.5-Coder | Fiables en specs largas sin desviarse |
 | implementer | Ejecución de código, scope estricto | Claude Sonnet / GPT-4o | DeepSeek-Coder-V2 | Genuinamente competitivo en coding |
 | reviewer | Evaluación contra criterios objetivos | o3-mini / Gemini 2.5 Flash | DeepSeek-R1 | Razonamiento lógico estricto, no creatividad |
