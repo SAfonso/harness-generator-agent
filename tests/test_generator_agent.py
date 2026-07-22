@@ -47,6 +47,7 @@ def test_generator_creates_all_expected_files_for_api_project(tmp_path: Path):
         tmp_path / "AGENTS.md",
         tmp_path / "CHECKPOINTS.md",
         tmp_path / "feature_list.json",
+        tmp_path / "progress" / "ledger.json",
         tmp_path / "init.sh",
         tmp_path / "CLAUDE.md",
         tmp_path / ".claude" / "agents" / "leader.md",
@@ -57,6 +58,17 @@ def test_generator_creates_all_expected_files_for_api_project(tmp_path: Path):
     for path in expected:
         assert path.exists(), f"missing generated file: {path}"
         assert path.is_file()
+
+
+def test_ledger_is_generated_empty(tmp_path: Path):
+    import json
+
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    ledger = json.loads((tmp_path / "progress" / "ledger.json").read_text(encoding="utf-8"))
+    assert ledger == {"decisions": [], "tasks": []}
 
 
 def test_feature_list_tasks_are_atomic_with_complexity(tmp_path: Path):

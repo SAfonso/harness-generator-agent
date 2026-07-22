@@ -16,10 +16,11 @@ def run_generator(spec: HarnessSpec, output_path: Path) -> list[str]:
     generated: list[str] = []
 
     base_files = [
-        ("AGENTS.md",         "base/AGENTS.md.j2"),
-        ("CHECKPOINTS.md",    "base/CHECKPOINTS.md.j2"),
-        ("feature_list.json", "base/feature_list.json.j2"),
-        ("init.sh",           "base/init.sh.j2"),
+        ("AGENTS.md",              "base/AGENTS.md.j2"),
+        ("CHECKPOINTS.md",         "base/CHECKPOINTS.md.j2"),
+        ("feature_list.json",      "base/feature_list.json.j2"),
+        ("progress/ledger.json",   "base/ledger.json.j2"),
+        ("init.sh",                "base/init.sh.j2"),
     ]
     for filename, template_name in base_files:
         content = render_template(template_name, spec)
