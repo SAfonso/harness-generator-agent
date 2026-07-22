@@ -18,16 +18,16 @@ run_validator(harness_path: Path, spec: HarnessSpec) -> ValidatorResult
 
 ```python
 class ValidatorResult(BaseModel):
-    approved: bool                # True solo si los 7 checks pasan
+    approved: bool                # True solo si los 8 checks pasan
     report: ValidationReport      # resultado crudo de validate_harness
     informe: list[str]            # vacío si approved; una línea por check fallido
 ```
 
 ## Contrato
 
-- Envuelve la tool `validate_harness()`, que implementa los **7 checks obligatorios**
+- Envuelve la tool `validate_harness()`, que implementa los **8 checks obligatorios**
   (contrato canónico en `specs/tools.md#validate_harness` — no duplicar aquí).
-- **Condición de aprobación:** los 7 checks pasan sin excepciones →
+- **Condición de aprobación:** los 8 checks pasan sin excepciones →
   `approved=True`, `informe=[]`.
 - **Condición de rechazo:** cualquier check fallido → `approved=False` y una
   línea de informe por cada check fallido (solo los fallidos) que incluye:

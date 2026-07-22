@@ -65,6 +65,76 @@ class IntakeResult(BaseModel):
     questions: list[str]             # preguntas pendientes si status == "needs_input"
 ```
 
+---
+
+## Modelos runtime del harness generado (v2 — spec, sin implementar)
+
+Los siguientes modelos NO viajan por el pipeline de este repo (`intake → analysis →
+generator → validator`). Describen artefactos del harness **ya generado**, en
+ejecución sobre `feature_list.json`: `generator_agent` los usa para renderizar el
+esqueleto (`progress/ledger.json` vacío) y `validator_agent` para comprobar su forma.
+Ningún agente de `src/agents/` los instancia — los produce/consume Claude Code al
+ejecutar el harness generado (ver `SPEC.md#flujo-de-ejecución-del-harness-generado`).
+
+### `LedgerDecision` — entrada de decisión en el ledger
+
+```python
+class LedgerDecision(BaseModel):
+    id: str                     # ADR-000N
+    date: str
+    summary: str                 # una línea, destilada
+    scope: list[str]             # paths o áreas afectadas
+    task_id: int | None          # tarea que originó la decisión, si aplica
+```
+
+### `IntegrationReport` — salida cruda de NOTARIO/CENTINELA dentro de la sub-sesión
+
+```python
+class IntegrationReport(BaseModel):
+    task_id: int
+    pushed: bool
+    branch: str | None
+    pr_url: str | None
+    ci_status: Literal["pending", "passed", "failed"] | None
+    merge_status: Literal["pending", "merged", "conflict", "failed"] | None
+    failure_context: str | None   # reconstruido por CENTINELA si ci_status/merge_status fallan
+```
+
+### `TaskCloseOut` — resumen que la sub-sesión de una tarea devuelve a DIRECTOR
+
+```python
+class TaskCloseOut(BaseModel):
+    task_id: int
+    status: Literal["integrated", "escalated"]
+    summary: str                  # resumen destilado, nunca el log crudo
+    decisions: list[LedgerDecision] = []
+    commit: str | None = None
+    pr_url: str | None = None
+    attempts: int                 # ciclos de rechazo consumidos (máx. 3)
+```
+
+### `ContextPackage` — paquete mínimo que DIRECTOR pasa a cada sub-sesión de tarea
+
+```python
+class ContextPackage(BaseModel):
+    task_id: int
+    task_spec: dict                              # entrada correspondiente de feature_list.json
+    relevant_decisions: list[LedgerDecision]      # filtradas por scope/depends_on, no el ledger completo
+    relevant_task_summaries: list[TaskCloseOut]   # solo de las tareas en depends_on
+    acceptance_criteria: list[str]                # subconjunto relevante de CHECKPOINTS.md
+```
+
+### `Ledger` — estado persistente de DIRECTOR entre sesiones (`progress/ledger.json`)
+
+```python
+class Ledger(BaseModel):
+    decisions: list[LedgerDecision] = []
+    tasks: list[TaskCloseOut] = []
+```
+
+DIRECTOR no mantiene memoria conversacional larga entre tareas — este modelo es su
+único estado persistente, versionado en el repo del proyecto destino.
+
 ## Reglas del módulo
 
 - Todos los modelos se importan desde `src.models.harness_spec` — un único punto de import.

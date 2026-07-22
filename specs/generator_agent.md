@@ -22,9 +22,11 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
    1. `AGENTS.md` — define todos los roles (referencia para el resto)
    2. `CHECKPOINTS.md` — criterios de aceptación (referencia para el reviewer)
    3. `feature_list.json` — backlog inicial inferido
-   4. `init.sh` — verificación del entorno
-   5. `.claude/agents/*.md` — un fichero por agente, en orden de flujo
-   6. `CLAUDE.md` — se genera último porque debe ser coherente con TODO lo anterior;
+   4. `progress/ledger.json` — **v2, spec:** ledger vacío (`{"decisions": [], "tasks": []}`),
+      se escribe una sola vez; DIRECTOR lo actualiza en runtime, no se regenera después
+   5. `init.sh` — verificación del entorno (incluye check de `git`/`gh` — v2, spec)
+   6. `.claude/agents/*.md` — un fichero por agente, en orden de flujo
+   7. `CLAUDE.md` — se genera último porque debe ser coherente con TODO lo anterior;
       es el fichero que Claude Code lee primero al arrancar cualquier sesión
 3. Antes de generar cada fichero, lee los ya generados
 4. Si detecta contradicción, para y reporta antes de continuar
@@ -45,3 +47,10 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
 - Incluye `tester.md` solo para proyectos de tipo `agent`
 - Ningún fichero generado contiene placeholders sin resolver (`{{`)
 - Ningún fichero generado queda vacío
+
+## v2 (spec, sin implementar)
+
+- Incluye `notario.md` y `centinela.md` para **todos** los tipos de proyecto —
+  núcleo fijo, igual que `implementer.md`/`reviewer.md` (`config.py#_CORE_AGENTS`)
+- Genera `progress/ledger.json` vacío con claves `decisions: []` y `tasks: []`
+  (modelo `Ledger` en `specs/models.md`) como cuarto fichero, antes de `init.sh`

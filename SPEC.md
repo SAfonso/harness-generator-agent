@@ -72,10 +72,50 @@ como estado compartido que viaja por los cuatro agentes.
 | generator | ESCRIBANO | Coherencia entre ficheros por encima de todo |
 | implementer | BISTURÍ | Scope estricto, mínimo viable verificable |
 | reviewer | FISCAL | Contrasta contra contrato, no busca bugs |
+| integrator | NOTARIO | Formaliza en git lo ya aprobado — rama al iniciar, commit+push+PR al cerrar (v2, pendiente en `config.py`) |
+| watchman | CENTINELA | Verifica CI/merge y mergea en automático si está en verde; si falla, reabre el ciclo con FISCAL (v2, pendiente en `config.py`) |
 | tester | QA | Solo para proyectos de tipo agent — verifica comportamiento antes de aprobar |
 
 Los modos son fijos y viven en `src/config.py` (`AGENT_MODES`). Las reglas de
 comportamiento de cada modo están en el spec del agente correspondiente.
+
+---
+
+## Flujo de ejecución del harness generado (runtime, v2 — spec, sin implementar)
+
+A diferencia del flujo de construcción de este repo (arriba), esto describe cómo
+se ejecuta el harness **ya generado**, tarea a tarea, sobre `feature_list.json` en
+el proyecto destino. Es comportamiento especificado en `leader.md.j2` y los
+ficheros de agente — no hay motor Python que lo orqueste, lo ejecuta Claude Code.
+
+**Estado persistente de DIRECTOR:** deja de mantener memoria conversacional larga
+entre tareas. Su estado vive en `progress/ledger.json` (modelo `Ledger` —
+`specs/models.md`): decisiones (`LedgerDecision`) y resúmenes de tareas cerradas
+(`TaskCloseOut`).
+
+**Sesión aislada por tarea:** por cada tarea `pending` de `feature_list.json`,
+DIRECTOR:
+
+1. Construye un `ContextPackage` (tarea + decisiones del ledger relevantes por
+   `scope`/`depends_on` + resúmenes de las tareas de las que depende + criterios
+   de aceptación relevantes de `CHECKPOINTS.md`) — nunca pasa el ledger completo
+   ni el historial de conversación.
+2. Lanza una sub-sesión (subagente) con ese paquete, con el modelo según la
+   `complejidad` de la tarea (comportamiento ya existente en el leader).
+3. La sub-sesión ejecuta: `NOTARIO(rama) → BISTURÍ → FISCAL(→QA) → NOTARIO(commit+push+PR) → CENTINELA(CI+merge)`.
+   - NOTARIO crea `task/{id}-{slug}` desde la rama por defecto del remoto al
+     iniciar la tarea, y hace commit+push+PR al cerrarla, solo tras aprobación
+     de FISCAL(+QA).
+   - CENTINELA verifica CI y conflictos; si están en verde hace merge automático
+     del PR — el batch corre desatendido, no espera aprobación humana.
+   - Un rechazo de FISCAL o un fallo de CENTINELA cuentan igual contra el límite
+     de 3 rechazos ya existente en el leader; un fallo de CENTINELA reabre el
+     ciclo devolviendo el control a FISCAL con el `failure_context` de
+     `IntegrationReport` adjunto — nunca relanza BISTURÍ a ciegas ni repite la
+     tarea desde cero.
+4. Al cerrar (integrada o escalada), la sub-sesión devuelve un `TaskCloseOut` a
+   DIRECTOR, que lo añade a `progress/ledger.json` (resumen destilado, nunca el
+   log crudo) y actualiza el `status` de la tarea en `feature_list.json`.
 
 ---
 
@@ -106,8 +146,23 @@ comportamiento de cada modo están en el spec del agente correspondiente.
 
 ## Lo que NO está en v1
 
-- Memoria entre sesiones
-- Soporte para más de 6 agentes en el harness generado
+- Memoria entre sesiones (spec en v2 — ver "Flujo de ejecución del harness
+  generado" arriba y `specs/models.md#Ledger`)
+- Soporte para más de 6 agentes en el harness generado (v2 lo eleva a 8:
+  `leader, planner, implementer, reviewer, integrator, watchman` + `tester`
+  para tipo `agent`)
 - Personalización de plantillas por el usuario
 - Interfaz web
 - `update_spec` operativo (definido en `specs/tools.md`, implementación en v2)
+- Integración con git (commit/push/PR/merge) y verificación de CI — definido en
+  spec (`NOTARIO`/`CENTINELA`), implementación en v2
+
+## v2 — definido en spec, pendiente de implementación
+
+| Pieza | Spec | Código/tests |
+|---|---|---|
+| Agentes NOTARIO (integrator) y CENTINELA (watchman) | `specs/templates.md`, `SPEC.md` (modos + flujo de ejecución) | sin plantilla ni tests |
+| Ledger (`progress/ledger.json`) + `ContextPackage` + `TaskCloseOut` + `IntegrationReport` | `specs/models.md` | sin código ni tests |
+| 8º check del validator (ledger presente y válido) | `specs/tools.md`, `specs/validator_agent.md` | sin implementación ni test |
+| Sub-sesión aislada por tarea + rama por defecto detectada + merge automático en CI verde | `SPEC.md#flujo-de-ejecución-del-harness-generado` | comportamiento a escribir en `leader.md.j2`, sin cambios de código aún |
+| `_CORE_AGENTS`/`AGENT_MODES` con `integrator`/`watchman` | `SPEC.md` (tabla de modos) | `config.py` sin actualizar aún |

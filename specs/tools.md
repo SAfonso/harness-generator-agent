@@ -95,7 +95,7 @@ class ValidationReport(BaseModel):
     results: list[CheckResult]
 ```
 
-**Los 7 checks obligatorios (contrato canónico — `validator_agent` los referencia):**
+**Los 8 checks obligatorios (contrato canónico — `validator_agent` los referencia):**
 ```
 1. Todos los agentes en AGENTS.md tienen su fichero en .claude/agents/
 2. Todos los modos en los ficheros de agente coinciden con HarnessSpec.agent_roles
@@ -104,9 +104,11 @@ class ValidationReport(BaseModel):
 5. init.sh no tiene placeholders sin resolver
 6. CLAUDE.md menciona explícitamente el modo del harness (EJECUTOR/PROFESOR)
 7. Ningún fichero tiene el string "{{" sin cerrar
+8. progress/ledger.json existe y es JSON válido con las claves "decisions" y
+   "tasks" (v2 — spec, sin implementar; ver specs/models.md#Ledger)
 ```
 
-- `passed == True` solo si los 7 checks pasan sin excepciones.
+- `passed == True` solo si los 8 checks pasan sin excepciones.
 - Cada check fallido produce un `CheckResult` con qué se esperaba vs qué se encontró.
 
 ---
