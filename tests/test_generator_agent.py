@@ -94,6 +94,17 @@ def test_leader_file_documents_ledger_and_context_package(tmp_path: Path):
     assert "centinela" in leader_content.lower()
 
 
+def test_init_sh_checks_git_and_gh_availability(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    content = (tmp_path / "init.sh").read_text(encoding="utf-8")
+    assert "git" in content
+    assert "gh" in content
+    assert "gh auth status" in content
+
+
 def test_ledger_is_generated_empty(tmp_path: Path):
     import json
 
