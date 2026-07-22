@@ -52,6 +52,10 @@ def valid_harness(tmp_path) -> Path:
     (agents_dir / "reviewer.md").write_text(
         "Agente reviewer — modo FISCAL", encoding="utf-8"
     )
+    (tmp_path / "progress").mkdir()
+    (tmp_path / "progress" / "ledger.json").write_text(
+        json.dumps({"decisions": [], "tasks": []}), encoding="utf-8"
+    )
     return tmp_path
 
 
@@ -61,7 +65,7 @@ def test_valid_harness_is_approved_with_empty_informe(valid_harness, spec):
     assert result.approved is True
     assert result.informe == []
     assert result.report.passed is True
-    assert len(result.report.results) == 7
+    assert len(result.report.results) == 8
 
 
 def test_missing_agent_file_is_rejected_with_informe_for_check_1(valid_harness, spec):

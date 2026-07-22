@@ -151,6 +151,35 @@ def validate_harness(harness_path: Path, spec: HarnessSpec) -> ValidationReport:
         )
     )
 
+    # Check 8: progress/ledger.json exists, is valid JSON, and has the keys
+    # "decisions" and "tasks" (v2 — ver specs/models.md#Ledger)
+    ledger_file = harness_path / "progress" / "ledger.json"
+    ledger_found = "file not found"
+    ledger_ok = False
+    if ledger_file.exists():
+        try:
+            ledger_data = json.loads(ledger_file.read_text(encoding="utf-8"))
+            if (
+                isinstance(ledger_data, dict)
+                and "decisions" in ledger_data
+                and "tasks" in ledger_data
+            ):
+                ledger_ok = True
+                ledger_found = "valid ledger"
+            else:
+                ledger_found = "missing 'decisions'/'tasks' keys"
+        except json.JSONDecodeError:
+            ledger_found = "invalid JSON"
+    results.append(
+        CheckResult(
+            check_id=8,
+            passed=ledger_ok,
+            file=str(ledger_file),
+            expected='valid JSON with "decisions" and "tasks" keys',
+            found=ledger_found,
+        )
+    )
+
     return ValidationReport(passed=all(r.passed for r in results), results=results)
 
 

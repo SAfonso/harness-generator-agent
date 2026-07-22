@@ -52,15 +52,53 @@ def valid_harness(tmp_path) -> Path:
     (agents_dir / "reviewer.md").write_text(
         "Agente reviewer — modo FISCAL", encoding="utf-8"
     )
+    (tmp_path / "progress").mkdir()
+    (tmp_path / "progress" / "ledger.json").write_text(
+        json.dumps({"decisions": [], "tasks": []}), encoding="utf-8"
+    )
     return tmp_path
 
 
-def test_valid_harness_passes_all_seven_checks(valid_harness, spec):
+def test_valid_harness_passes_all_eight_checks(valid_harness, spec):
     report = validate_harness(valid_harness, spec)
 
     assert report.passed is True
-    assert len(report.results) == 7
+    assert len(report.results) == 8
     assert all(r.passed for r in report.results)
+
+
+def test_missing_ledger_fails_check_8(valid_harness, spec):
+    (valid_harness / "progress" / "ledger.json").unlink()
+
+    report = validate_harness(valid_harness, spec)
+
+    assert report.passed is False
+    check_8 = next(r for r in report.results if r.check_id == 8)
+    assert check_8.passed is False
+
+
+def test_ledger_with_invalid_json_fails_check_8(valid_harness, spec):
+    (valid_harness / "progress" / "ledger.json").write_text(
+        "not valid json", encoding="utf-8"
+    )
+
+    report = validate_harness(valid_harness, spec)
+
+    assert report.passed is False
+    check_8 = next(r for r in report.results if r.check_id == 8)
+    assert check_8.passed is False
+
+
+def test_ledger_missing_required_keys_fails_check_8(valid_harness, spec):
+    (valid_harness / "progress" / "ledger.json").write_text(
+        json.dumps({"decisions": []}), encoding="utf-8"
+    )
+
+    report = validate_harness(valid_harness, spec)
+
+    assert report.passed is False
+    check_8 = next(r for r in report.results if r.check_id == 8)
+    assert check_8.passed is False
 
 
 def test_missing_implementer_agent_file_fails_check_1(valid_harness, spec):

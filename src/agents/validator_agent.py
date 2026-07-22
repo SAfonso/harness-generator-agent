@@ -1,6 +1,6 @@
 """validator_agent — modo FISCAL: veredicto final sobre el harness generado.
 
-Contrasta contra el contrato (los 7 checks de validate_harness), no contra
+Contrasta contra el contrato (los 8 checks de validate_harness), no contra
 opinión. Read-only: nunca modifica el harness.
 """
 
