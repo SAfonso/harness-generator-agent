@@ -105,6 +105,18 @@ def test_init_sh_checks_git_and_gh_availability(tmp_path: Path):
     assert "gh auth status" in content
 
 
+def test_reviewer_file_documents_centinela_reopen(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    reviewer_content = (tmp_path / ".claude" / "agents" / "reviewer.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "centinela" in reviewer_content
+    assert "failure_context" in reviewer_content
+
+
 def test_ledger_is_generated_empty(tmp_path: Path):
     import json
 
