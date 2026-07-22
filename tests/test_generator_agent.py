@@ -32,6 +32,10 @@ def _make_complete_spec(**overrides) -> HarnessSpec:
                       scope="Implementa las tareas", tools=[]),
             AgentRole(name="reviewer", mode="FISCAL",
                       scope="Revisa el output", tools=[]),
+            AgentRole(name="integrator", mode="NOTARIO",
+                      scope="Formaliza en git el trabajo aprobado", tools=[]),
+            AgentRole(name="watchman", mode="CENTINELA",
+                      scope="Verifica CI y merge tras la integración", tools=[]),
         ],
     )
     defaults.update(overrides)
@@ -54,10 +58,40 @@ def test_generator_creates_all_expected_files_for_api_project(tmp_path: Path):
         tmp_path / ".claude" / "agents" / "planner.md",
         tmp_path / ".claude" / "agents" / "implementer.md",
         tmp_path / ".claude" / "agents" / "reviewer.md",
+        tmp_path / ".claude" / "agents" / "integrator.md",
+        tmp_path / ".claude" / "agents" / "watchman.md",
     ]
     for path in expected:
         assert path.exists(), f"missing generated file: {path}"
         assert path.is_file()
+
+
+def test_integrator_and_watchman_files_declare_their_own_mode(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    integrator_content = (tmp_path / ".claude" / "agents" / "integrator.md").read_text(
+        encoding="utf-8"
+    )
+    watchman_content = (tmp_path / ".claude" / "agents" / "watchman.md").read_text(
+        encoding="utf-8"
+    )
+    assert "NOTARIO" in integrator_content
+    assert "CENTINELA" in watchman_content
+
+
+def test_leader_file_documents_ledger_and_context_package(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    leader_content = (tmp_path / ".claude" / "agents" / "leader.md").read_text(
+        encoding="utf-8"
+    )
+    assert "ledger" in leader_content.lower()
+    assert "contextpackage" in leader_content.lower().replace(" ", "")
+    assert "centinela" in leader_content.lower()
 
 
 def test_ledger_is_generated_empty(tmp_path: Path):

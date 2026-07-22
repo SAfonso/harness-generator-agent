@@ -11,6 +11,10 @@ _SCOPE_BY_NAME = {
     "planner":     "Descompone objetivos en tareas atómicas y asigna complejidad a cada una",
     "implementer": "Implementa las tareas del backlog",
     "reviewer":    "Revisa y valida el output contra los criterios de aceptación",
+    "integrator":  "Formaliza en git el trabajo aprobado: crea la rama al iniciar "
+                   "la tarea y hace commit+push+PR al cerrarla",
+    "watchman":    "Verifica CI y merge tras la integración; si falla, reabre el "
+                   "ciclo de revisión con el reviewer",
     "tester":      "Diseña y ejecuta tests para verificar el comportamiento",
 }
 _DEFAULT_SCOPE = "Rol especializado del harness"

@@ -50,7 +50,8 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
 
 ## v2 (spec, sin implementar)
 
-- Incluye `notario.md` y `centinela.md` para **todos** los tipos de proyecto —
-  núcleo fijo, igual que `implementer.md`/`reviewer.md` (`config.py#_CORE_AGENTS`)
+- Incluye `integrator.md` (NOTARIO) y `watchman.md` (CENTINELA) para **todos**
+  los tipos de proyecto — núcleo fijo, igual que `implementer.md`/`reviewer.md`
+  (`config.py#_CORE_AGENTS`)
 - Genera `progress/ledger.json` vacío con claves `decisions: []` y `tasks: []`
   (modelo `Ledger` en `specs/models.md`) como cuarto fichero, antes de `init.sh`

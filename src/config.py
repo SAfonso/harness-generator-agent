@@ -16,6 +16,8 @@ AGENT_MODES = {
     "generator":   "ESCRIBANO",
     "implementer": "BISTURÍ",
     "reviewer":    "FISCAL",
+    "integrator":  "NOTARIO",
+    "watchman":    "CENTINELA",
     "tester":      "QA",
 }
 
@@ -41,10 +43,12 @@ LLM_RECOMMENDATIONS = {
 }
 
 # Agentes mínimos por tipo de proyecto.
-# El núcleo (leader, implementer, reviewer) es fijo y está SIEMPRE — no se
-# añaden agentes distintos de los definidos en AGENT_MODES. El tipo "agent"
-# suma tester según su propia definición.
-_CORE_AGENTS = ["leader", "planner", "implementer", "reviewer"]
+# El núcleo (leader, planner, implementer, reviewer, integrator, watchman) es
+# fijo y está SIEMPRE — no se añaden agentes distintos de los definidos en
+# AGENT_MODES. El tipo "agent" suma tester según su propia definición.
+_CORE_AGENTS = [
+    "leader", "planner", "implementer", "reviewer", "integrator", "watchman",
+]
 MIN_AGENTS_BY_TYPE = {
     "data_pipeline": _CORE_AGENTS,
     "api":           _CORE_AGENTS,

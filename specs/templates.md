@@ -27,10 +27,16 @@ src/templates/
     ├── generator.md.j2   # modo: ESCRIBANO
     ├── implementer.md.j2 # modo: BISTURÍ
     ├── reviewer.md.j2    # modo: FISCAL
-    ├── notario.md.j2     # v2, spec — modo: NOTARIO, rama + commit/push/PR
-    ├── centinela.md.j2   # v2, spec — modo: CENTINELA, CI + merge automático
+    ├── integrator.md.j2  # v2, spec — modo: NOTARIO, rama + commit/push/PR
+    ├── watchman.md.j2    # v2, spec — modo: CENTINELA, CI + merge automático
     └── tester.md.j2      # modo: QA — solo proyectos de tipo agent
 ```
+
+> El fichero de plantilla se llama por el **nombre interno del rol**
+> (`role.name`, ej. `integrator`), igual que `implementer.md.j2` es BISTURÍ —
+> `generator_agent` busca `agents/{role.name}.md.j2` sin caso especial
+> (`src/agents/generator_agent.py`). El modo (NOTARIO, CENTINELA) solo aparece
+> como contenido dentro del fichero, nunca en su nombre.
 
 ## Convenciones
 
@@ -46,12 +52,12 @@ src/templates/
 
 ## v2 (spec, sin implementar) — NOTARIO, CENTINELA y ledger
 
-- `notario.md.j2` describe **dos** momentos, en secciones separadas dentro del
-  mismo fichero: `## Al iniciar la tarea` (crea `task/{id}-{slug}` desde la rama
-  por defecto del remoto, detectada, no hardcodeada) y `## Al cerrar la tarea`
-  (commit + push de esa rama + abre/actualiza el PR, solo tras aprobación de
-  FISCAL/QA)
-- `centinela.md.j2` especifica que verifica CI y conflictos, y si están en verde
+- `integrator.md.j2` (modo NOTARIO) describe **dos** momentos, en secciones
+  separadas dentro del mismo fichero: `## Al iniciar la tarea` (crea
+  `task/{id}-{slug}` desde la rama por defecto del remoto, detectada, no
+  hardcodeada) y `## Al cerrar la tarea` (commit + push de esa rama + abre/
+  actualiza el PR, solo tras aprobación de FISCAL/QA)
+- `watchman.md.j2` (modo CENTINELA) especifica que verifica CI y conflictos, y si están en verde
   hace **merge automático** del PR — no espera aprobación humana (el batch corre
   desatendido); si falla, reconstruye el contexto y lo entrega a FISCAL, nunca
   relanza BISTURÍ directamente ni repite la tarea entera

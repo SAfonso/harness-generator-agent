@@ -36,6 +36,8 @@ def _assert_common_invariants(spec: HarnessSpec) -> None:
     assert "planner" in by_name and by_name["planner"].mode == "ARQUITECTO"
     assert "implementer" in by_name and by_name["implementer"].mode == "BISTURÍ"
     assert "reviewer" in by_name and by_name["reviewer"].mode == "FISCAL"
+    assert "integrator" in by_name and by_name["integrator"].mode == "NOTARIO"
+    assert "watchman" in by_name and by_name["watchman"].mode == "CENTINELA"
 
 
 def test_minimal_cli_short_time_is_simple_with_core_agents():
@@ -46,7 +48,9 @@ def test_minimal_cli_short_time_is_simple_with_core_agents():
     _assert_common_invariants(result)
     assert result.harness_complexity == "simple"
     names = [r.name for r in result.agent_roles]
-    assert names == ["leader", "planner", "implementer", "reviewer"]
+    assert names == [
+        "leader", "planner", "implementer", "reviewer", "integrator", "watchman",
+    ]
 
 
 def test_full_api_spec_is_standard_with_rules():
@@ -86,7 +90,7 @@ def test_agent_project_always_adds_tester():
     _assert_common_invariants(result)
     names = [r.name for r in result.agent_roles]
     assert "tester" in names
-    assert len(result.agent_roles) == 5
+    assert len(result.agent_roles) == 7
 
 
 def test_rules_include_atomic_tasks_and_model_by_complexity():
