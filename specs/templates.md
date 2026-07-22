@@ -18,7 +18,7 @@ src/templates/
 │   ├── CHECKPOINTS.md.j2
 │   ├── feature_list.json.j2
 │   ├── init.sh.j2
-│   └── ledger.json.j2    # v2, spec — ledger vacío ({"decisions": [], "tasks": []})
+│   └── ledger.json.j2    # v2 — ledger vacío ({"decisions": [], "tasks": []})
 └── agents/               # Plantillas de agentes con modos
     ├── leader.md.j2      # modo: DIRECTOR
     ├── planner.md.j2     # modo: ARQUITECTO — tareas atómicas + complejidad
@@ -27,8 +27,8 @@ src/templates/
     ├── generator.md.j2   # modo: ESCRIBANO
     ├── implementer.md.j2 # modo: BISTURÍ
     ├── reviewer.md.j2    # modo: FISCAL
-    ├── integrator.md.j2  # v2, spec — modo: NOTARIO, rama + commit/push/PR
-    ├── watchman.md.j2    # v2, spec — modo: CENTINELA, CI + merge automático
+    ├── integrator.md.j2  # v2 — modo: NOTARIO, rama + commit/push/PR
+    ├── watchman.md.j2    # v2 — modo: CENTINELA, CI + merge automático
     └── tester.md.j2      # modo: QA — solo proyectos de tipo agent
 ```
 
@@ -50,7 +50,7 @@ src/templates/
 - El backlog semilla no contiene objetivos amplios: el entregable entra como
   tarea de **descomposición** asignada al planner, no como tarea de implementación
 
-## v2 (spec, sin implementar) — NOTARIO, CENTINELA y ledger
+## v2 — NOTARIO, CENTINELA y ledger
 
 - `integrator.md.j2` (modo NOTARIO) describe **dos** momentos, en secciones
   separadas dentro del mismo fichero: `## Al iniciar la tarea` (crea

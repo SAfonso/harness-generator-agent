@@ -67,7 +67,7 @@ class IntakeResult(BaseModel):
 
 ---
 
-## Modelos runtime del harness generado (v2 — spec, sin implementar)
+## Modelos runtime del harness generado (v2)
 
 Los siguientes modelos NO viajan por el pipeline de este repo (`intake → analysis →
 generator → validator`). Describen artefactos del harness **ya generado**, en

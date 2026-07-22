@@ -72,8 +72,8 @@ como estado compartido que viaja por los cuatro agentes.
 | generator | ESCRIBANO | Coherencia entre ficheros por encima de todo |
 | implementer | BISTURÍ | Scope estricto, mínimo viable verificable |
 | reviewer | FISCAL | Contrasta contra contrato, no busca bugs |
-| integrator | NOTARIO | Formaliza en git lo ya aprobado — rama al iniciar, commit+push+PR al cerrar (v2, pendiente en `config.py`) |
-| watchman | CENTINELA | Verifica CI/merge y mergea en automático si está en verde; si falla, reabre el ciclo con FISCAL (v2, pendiente en `config.py`) |
+| integrator | NOTARIO | Formaliza en git lo ya aprobado — rama al iniciar, commit+push+PR al cerrar |
+| watchman | CENTINELA | Verifica CI/merge y mergea en automático si está en verde; si falla, reabre el ciclo con FISCAL |
 | tester | QA | Solo para proyectos de tipo agent — verifica comportamiento antes de aprobar |
 
 Los modos son fijos y viven en `src/config.py` (`AGENT_MODES`). Las reglas de
@@ -81,12 +81,16 @@ comportamiento de cada modo están en el spec del agente correspondiente.
 
 ---
 
-## Flujo de ejecución del harness generado (runtime, v2 — spec, sin implementar)
+## Flujo de ejecución del harness generado (runtime, v2)
 
 A diferencia del flujo de construcción de este repo (arriba), esto describe cómo
 se ejecuta el harness **ya generado**, tarea a tarea, sobre `feature_list.json` en
 el proyecto destino. Es comportamiento especificado en `leader.md.j2` y los
 ficheros de agente — no hay motor Python que lo orqueste, lo ejecuta Claude Code.
+La especificación de este flujo está completa y verificada por tests
+(`tests/test_generator_agent.py`, `tests/test_validate_harness.py`): lo que NO
+existe es un motor Python que lo ejecute, porque no lo necesita — el propio
+Claude Code, siguiendo estos ficheros, es quien lo ejecuta.
 
 **Estado persistente de DIRECTOR:** deja de mantener memoria conversacional larga
 entre tareas. Su estado vive en `progress/ledger.json` (modelo `Ledger` —
@@ -144,25 +148,26 @@ DIRECTOR:
 
 ---
 
-## Lo que NO está en v1
+## Lo que NO estaba en v1 (bloque original del hackathon)
 
-- Memoria entre sesiones (spec en v2 — ver "Flujo de ejecución del harness
-  generado" arriba y `specs/models.md#Ledger`)
-- Soporte para más de 6 agentes en el harness generado (v2 lo eleva a 8:
-  `leader, planner, implementer, reviewer, integrator, watchman` + `tester`
-  para tipo `agent`)
+- Memoria entre sesiones
+- Soporte para más de 4 agentes en el harness generado
+- Integración con git (commit/push/PR/merge) y verificación de CI
 - Personalización de plantillas por el usuario
 - Interfaz web
-- `update_spec` operativo (definido en `specs/tools.md`, implementación en v2)
-- Integración con git (commit/push/PR/merge) y verificación de CI — definido en
-  spec (`NOTARIO`/`CENTINELA`), implementación en v2
+- `update_spec` operativo (definido en `specs/tools.md`, implementación pendiente)
 
-## v2 — definido en spec, pendiente de implementación
+## v2 — añadido (memoria entre sesiones + integración git)
+
+Implementado y con tests en verde (commits `ef27508`..`29c4b01`):
 
 | Pieza | Spec | Código/tests |
 |---|---|---|
-| Agentes NOTARIO (integrator) y CENTINELA (watchman) | `specs/templates.md`, `SPEC.md` (modos + flujo de ejecución) | sin plantilla ni tests |
-| Ledger (`progress/ledger.json`) + `ContextPackage` + `TaskCloseOut` + `IntegrationReport` | `specs/models.md` | sin código ni tests |
-| 8º check del validator (ledger presente y válido) | `specs/tools.md`, `specs/validator_agent.md` | sin implementación ni test |
-| Sub-sesión aislada por tarea + rama por defecto detectada + merge automático en CI verde | `SPEC.md#flujo-de-ejecución-del-harness-generado` | comportamiento a escribir en `leader.md.j2`, sin cambios de código aún |
-| `_CORE_AGENTS`/`AGENT_MODES` con `integrator`/`watchman` | `SPEC.md` (tabla de modos) | `config.py` sin actualizar aún |
+| Agentes NOTARIO (`integrator`) y CENTINELA (`watchman`) — núcleo fijo, 6 agentes | `specs/templates.md`, tabla de modos arriba | `src/templates/agents/integrator.md.j2`, `watchman.md.j2`; `config.py#_CORE_AGENTS` |
+| Ledger (`progress/ledger.json`) + `ContextPackage` + `TaskCloseOut` + `IntegrationReport` + `LedgerDecision` | `specs/models.md` | `src/models/harness_spec.py`, `tests/test_models.py` |
+| `progress/ledger.json` generado vacío como 4º fichero base | `specs/generator_agent.md` | `src/agents/generator_agent.py`, `src/templates/base/ledger.json.j2` |
+| 8º check del validator (ledger presente y válido) | `specs/tools.md`, `specs/validator_agent.md` | `src/tools/validate_harness.py`, `tests/test_validate_harness.py` |
+| Sub-sesión aislada por tarea + ledger + rama por defecto + merge automático en CI verde | "Flujo de ejecución del harness generado" arriba | `src/templates/agents/leader.md.j2` |
+| `init.sh` comprueba git/gh en vez de asumirlos | `specs/templates.md` | `src/templates/base/init.sh.j2` |
+
+Pendiente real: `update_spec` (sin implementar, no forma parte de esta iteración).

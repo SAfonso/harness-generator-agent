@@ -22,9 +22,9 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
    1. `AGENTS.md` — define todos los roles (referencia para el resto)
    2. `CHECKPOINTS.md` — criterios de aceptación (referencia para el reviewer)
    3. `feature_list.json` — backlog inicial inferido
-   4. `progress/ledger.json` — **v2, spec:** ledger vacío (`{"decisions": [], "tasks": []}`),
+   4. `progress/ledger.json` — **v2:** ledger vacío (`{"decisions": [], "tasks": []}`),
       se escribe una sola vez; DIRECTOR lo actualiza en runtime, no se regenera después
-   5. `init.sh` — verificación del entorno (incluye check de `git`/`gh` — v2, spec)
+   5. `init.sh` — verificación del entorno (incluye check de `git`/`gh` — v2)
    6. `.claude/agents/*.md` — un fichero por agente, en orden de flujo
    7. `CLAUDE.md` — se genera último porque debe ser coherente con TODO lo anterior;
       es el fichero que Claude Code lee primero al arrancar cualquier sesión
@@ -48,7 +48,7 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
 - Ningún fichero generado contiene placeholders sin resolver (`{{`)
 - Ningún fichero generado queda vacío
 
-## v2 (spec, sin implementar)
+## v2
 
 - Incluye `integrator.md` (NOTARIO) y `watchman.md` (CENTINELA) para **todos**
   los tipos de proyecto — núcleo fijo, igual que `implementer.md`/`reviewer.md`

@@ -105,7 +105,7 @@ class ValidationReport(BaseModel):
 6. CLAUDE.md menciona explícitamente el modo del harness (EJECUTOR/PROFESOR)
 7. Ningún fichero tiene el string "{{" sin cerrar
 8. progress/ledger.json existe y es JSON válido con las claves "decisions" y
-   "tasks" (v2 — spec, sin implementar; ver specs/models.md#Ledger)
+   "tasks" (v2; ver specs/models.md#Ledger)
 ```
 
 - `passed == True` solo si los 8 checks pasan sin excepciones.
