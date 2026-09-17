@@ -14,8 +14,11 @@ usuario** durante la fase de diseño.
 ## Firma
 
 ```python
-run_intake(text: str, inspection: InspectionResult | None = None) -> IntakeResult
+run_intake(text: str, mode: str, inspection: InspectionResult | None = None) -> IntakeResult
 ```
+
+(`mode` ya existía en la implementación real pese a no figurar en esta spec —
+desincronización detectada y corregida al añadir `inspection`.)
 
 `inspection` la produce `inspect_project()` (`specs/tools.md`) sobre el
 directorio destino, **antes** de llamar a `run_intake` (ver `specs/main.md`).

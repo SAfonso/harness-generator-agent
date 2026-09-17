@@ -1,7 +1,7 @@
 """Unit tests for run_intake — written before implementation (TDD)."""
 
 from src.agents.intake_agent import run_intake
-from src.models.harness_spec import HarnessSpec, IntakeResult
+from src.models.harness_spec import HarnessSpec, InferredField, InspectionResult, IntakeResult
 
 
 def test_rich_input_returns_complete_with_filled_spec():
@@ -66,3 +66,65 @@ def test_rich_input_with_recommended_llm_strategy():
     assert result.status == "complete"
     assert result.spec is not None
     assert result.spec.llm_config.strategy == "recommended"
+
+
+def test_high_confidence_inspection_fills_project_type_and_stack_without_asking():
+    text = (
+        "Los datos vienen de una base de datos. Sin restricciones. "
+        "Done cuando funciona. Entrego un informe. Tengo 3 días."
+    )
+    inspection = InspectionResult(
+        is_existing_project=True,
+        fields={
+            "project_type": InferredField(
+                value="api", evidence="requirements.txt: fastapi", confidence="high",
+            ),
+            "stack": InferredField(
+                value=["Python", "fastapi"], evidence="requirements.txt", confidence="high",
+            ),
+        },
+        summary="Proyecto existente detectado.",
+    )
+
+    result = run_intake(text, mode="EJECUTOR", inspection=inspection)
+
+    assert result.status == "complete"
+    assert result.spec is not None
+    assert result.spec.project_type == "api"
+    assert "Python" in result.spec.stack
+    assert "fastapi" in result.spec.stack
+
+
+def test_low_confidence_inspection_always_asks_for_confirmation():
+    text = (
+        "Quiero construir un pipeline de datos con spark y databricks. "
+        "Los datos vienen de S3. Sin restricciones de red. "
+        "Done cuando el pipeline procesa 1000 registros sin errores. "
+        "Entrego un script python. Tengo 2 días."
+    )
+    inspection = InspectionResult(
+        is_existing_project=True,
+        fields={
+            "project_type": InferredField(
+                value="web",
+                evidence="señales contradictorias entre manifiestos: package.json → web; requirements.txt → data_pipeline",
+                confidence="low",
+            ),
+        },
+        summary="Proyecto existente detectado con señales contradictorias.",
+    )
+
+    result = run_intake(text, mode="EJECUTOR", inspection=inspection)
+
+    assert result.status == "needs_input"
+    assert result.spec is None
+    assert any("web" in q for q in result.questions)
+
+
+def test_no_inspection_argument_keeps_v1_behaviour():
+    text = "quiero hacer algo con python"
+
+    result = run_intake(text, mode="EJECUTOR", inspection=None)
+
+    assert result.status == "needs_input"
+    assert result.spec is None
