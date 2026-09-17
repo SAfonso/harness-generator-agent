@@ -22,5 +22,13 @@
     "priority": "high",
     "complejidad": "media",
     "depends_on": [2]
-  }
+  }{% for finding in spec.audit_findings %},
+  {
+    "id": {{ 3 + loop.index }},
+    "title": "Arreglar: {{ finding.description }} — {{ finding.suggested_fix }}",
+    "status": "pending",
+    "priority": "{{ 'high' if finding.severity == 'blocking' else 'medium' }}",
+    "complejidad": "{{ 'media' if finding.severity == 'blocking' else 'baja' }}",
+    "depends_on": [1]
+  }{% endfor %}
 ]

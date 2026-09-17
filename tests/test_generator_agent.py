@@ -146,6 +146,58 @@ def test_feature_list_tasks_are_atomic_with_complexity(tmp_path: Path):
     assert "descompon" in titles
 
 
+def test_feature_list_includes_a_task_per_audit_finding(tmp_path: Path):
+    import json
+
+    from src.models.harness_spec import AuditFinding
+
+    spec = _make_complete_spec(
+        audit_findings=[
+            AuditFinding(
+                check="no_git_remote",
+                severity="blocking",
+                description="El repositorio no tiene remoto.",
+                suggested_fix="Configurar un remoto y hacer push.",
+            ),
+            AuditFinding(
+                check="no_tests",
+                severity="warning",
+                description="No hay tests.",
+                suggested_fix="Añadir cobertura mínima.",
+            ),
+        ]
+    )
+
+    run_generator(spec, tmp_path)
+
+    tasks = json.loads((tmp_path / "feature_list.json").read_text(encoding="utf-8"))
+    assert len(tasks) == 5
+
+    blocking_task, warning_task = tasks[3], tasks[4]
+
+    assert blocking_task["id"] == 4
+    assert "El repositorio no tiene remoto." in blocking_task["title"]
+    assert "Configurar un remoto y hacer push." in blocking_task["title"]
+    assert blocking_task["priority"] == "high"
+    assert blocking_task["complejidad"] == "media"
+    assert blocking_task["depends_on"] == [1]
+
+    assert warning_task["id"] == 5
+    assert warning_task["priority"] == "medium"
+    assert warning_task["complejidad"] == "baja"
+
+
+def test_feature_list_has_three_tasks_without_audit_findings(tmp_path: Path):
+    import json
+
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    tasks = json.loads((tmp_path / "feature_list.json").read_text(encoding="utf-8"))
+    assert len(tasks) == 3
+
+
 def test_generator_produces_no_empty_files(tmp_path: Path):
     spec = _make_complete_spec()
 
