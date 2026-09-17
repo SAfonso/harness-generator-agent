@@ -76,8 +76,15 @@ inspecciona el directorio destino (`inspect_project`, ver `specs/tools.md`) —
 manifiestos de dependencias, historial git, `README.md`/`CLAUDE.md` existentes.
 Si infiere el tipo de proyecto o el stack con evidencia clara, PROFESOR lo da
 por bueno y solo confirma lo dudoso o pregunta lo que falte, en vez de repetir
-la entrevista completa. Fusionar el resultado con un `CLAUDE.md`/
-`feature_list.json` ya existentes en el proyecto sigue siendo manual.
+la entrevista completa.
+
+Además **audita** problemas mecánicos que romperían el harness generado (sin
+repo/remoto git, sin CI, sin tests, documentación vacía) y, cuando hay código,
+recomienda pasar `/code-review`/`/security-review` (eso sí requiere razonamiento,
+no lo hace `inspect_project`). Cada hallazgo entra como tarea inicial en
+`feature_list.json` con su arreglo propuesto — nunca se queda solo en comentario.
+Fusionar el resultado con un `CLAUDE.md`/`feature_list.json` ya existentes en
+el proyecto sigue siendo manual.
 
 ## Desarrollo
 
@@ -89,16 +96,18 @@ Metodología **SDD + TDD** estricta: actualizar spec → escribir test → imple
 - `CLAUDE.md` — reglas generales y tabla de redirección por módulo
 
 ```bash
-python3 -m pytest tests/ -q     # 69 tests
+python3 -m pytest tests/ -q     # 81 tests
 ```
 
 ## Estado
 
 v1 funcional: pipeline completo de extremo a extremo (intake → analysis →
-generator → validator). v2 en marcha: empaquetado (pip + skill de Claude Code)
-y modo brownfield (`inspect_project` + confirmación en vez de entrevista desde
-cero) ya implementados, 69 tests en verde. Pendiente: tool `update_spec`,
-clasificación por LLM en vez de keywords, inferir el resto de dimensiones
-(`data_sources`, `constraints`, `acceptance_criteria`, `deliverable`,
-`time_available`) en brownfield cuando haya evidencia explícita
-(`CHECKPOINTS.md`/`feature_list.json` de una ejecución previa).
+generator → validator). v2 en marcha: empaquetado (pip + skill de Claude Code),
+modo brownfield (`inspect_project` + confirmación en vez de entrevista desde
+cero) y auditoría de salud del proyecto (git/CI/tests/docs → tareas del
+backlog + recomendación de `/code-review`) ya implementados, 81 tests en verde.
+Pendiente: tool `update_spec`, clasificación por LLM en vez de keywords,
+inferir el resto de dimensiones (`data_sources`, `constraints`,
+`acceptance_criteria`, `deliverable`, `time_available`) en brownfield cuando
+haya evidencia explícita (`CHECKPOINTS.md`/`feature_list.json` de una
+ejecución previa).
