@@ -47,6 +47,19 @@ def test_agent_project_harness_includes_tester(tmp_path):
     assert (result.harness_path / ".claude" / "agents" / "tester.md").is_file()
 
 
+def test_brownfield_output_dir_lets_intake_infer_project_type(tmp_path):
+    (tmp_path / "requirements.txt").write_text("fastapi\nuvicorn\n", encoding="utf-8")
+    text = (
+        "Los datos vienen de una base de datos. Sin restricciones. "
+        "Done cuando funciona. Entrego un informe. Tengo 3 días."
+    )
+
+    result = run_pipeline(text, mode="EJECUTOR", output_dir=tmp_path)
+
+    assert result.status == "approved"
+    assert result.harness_path == tmp_path / "harness"
+
+
 def test_broken_generation_is_rejected_with_informe(tmp_path, monkeypatch):
     real_generator = main_module.run_generator
 

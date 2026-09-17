@@ -13,6 +13,7 @@ from src.agents.analysis_agent import run_analysis
 from src.agents.generator_agent import run_generator
 from src.agents.intake_agent import run_intake
 from src.agents.validator_agent import ValidatorResult, run_validator
+from src.tools.inspect_project import inspect_project
 
 
 class PipelineResult(BaseModel):
@@ -24,7 +25,8 @@ class PipelineResult(BaseModel):
 
 
 def run_pipeline(text: str, mode: str, output_dir: Path) -> PipelineResult:
-    intake = run_intake(text, mode)
+    inspection = inspect_project(output_dir)
+    intake = run_intake(text, mode, inspection)
     if intake.status == "needs_input":
         return PipelineResult(status="needs_input", questions=intake.questions)
 
