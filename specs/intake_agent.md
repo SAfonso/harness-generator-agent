@@ -2,7 +2,8 @@
 
 > Código: `src/agents/intake_agent.py` · Tests: `tests/test_intake_agent.py`
 > Errores conocidos: `errors/intake_agent.md` · Reglas transversales: `SPEC.md`
-> Depende de: `specs/models.md` (HarnessSpec, IntakeResult, LLMConfig), `specs/tools.md` (assess_input)
+> Depende de: `specs/models.md` (HarnessSpec, IntakeResult, LLMConfig, InspectionResult),
+> `specs/tools.md` (assess_input, inspect_project)
 
 ## Responsabilidad
 
@@ -13,13 +14,35 @@ usuario** durante la fase de diseño.
 ## Firma
 
 ```python
-run_intake(text: str) -> IntakeResult
+run_intake(text: str, inspection: InspectionResult | None = None) -> IntakeResult
 ```
+
+`inspection` la produce `inspect_project()` (`specs/tools.md`) sobre el
+directorio destino, **antes** de llamar a `run_intake` (ver `specs/main.md`).
+`None`/`is_existing_project=False` → flujo idéntico al de un proyecto desde
+cero (v1), sin ningún paso adicional.
 
 ## Flujo interno
 
-1. Pregunta de clasificación inicial: `¿Qué tipo de proyecto es?`
-2. Llama a `assess_input()` para medir densidad del input
+0. **Si `inspection.is_existing_project` (brownfield):** antes de la pregunta
+   de clasificación, PROFESOR abre mostrando `inspection.summary` tal cual
+   ("Veo que este proyecto ya tiene X, entiendo que estás montando Y —
+   ¿correcto?"). No es una pregunta en blanco: es una propuesta a confirmar o
+   corregir.
+   - Dimensiones con `InferredField.confidence == "high"`: se dan por buenas
+     salvo que el usuario las corrija explícitamente — no se repite la
+     pregunta de cero.
+   - Dimensiones con `confidence == "low"`: PROFESOR las nombra y pide
+     confirmación puntual (no las asume, tampoco repite la entrevista
+     completa) — coherente con la regla de modo PROFESOR de no validar por
+     defecto.
+   - Dimensiones ausentes de `inspection.fields`: siguen el flujo normal de
+     los pasos 1–5 de más abajo (batch o conversacional según `assess_input`).
+1. Pregunta de clasificación inicial: `¿Qué tipo de proyecto es?` — se omite
+   si `project_type` ya viene con `confidence == "high"` desde `inspection`
+   (paso 0) y el usuario no la ha corregido.
+2. Llama a `assess_input()` para medir densidad del input (el input a evaluar
+   es `text` combinado con lo ya confirmado en el paso 0, si lo hubo)
 3. Si input es rico → modo batch (lanza todas las preguntas relevantes al tipo)
 4. Si input es escaso → modo conversacional (pregunta una a una)
 5. Detecta huecos críticos y pregunta hasta cubrirlos

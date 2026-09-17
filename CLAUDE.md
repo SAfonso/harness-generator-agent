@@ -27,6 +27,7 @@ módulo está en su spec — **no leas specs de módulos que no toques**.
 | `src/agents/validator_agent.py` | `specs/validator_agent.md` | `errors/validator_agent.md` |
 | `src/templates/` | `specs/templates.md` | `errors/templates.md` |
 | `src/main.py` | `specs/main.md` | `errors/main.md` |
+| `pyproject.toml`, `skill/` | `specs/packaging.md` | `errors/packaging.md` |
 
 ## Protocolo de errores (obligatorio)
 

@@ -3,6 +3,7 @@
 > Código: `src/main.py` · Tests: `tests/test_main.py`
 > Errores conocidos: `errors/main.md` · Reglas transversales: `SPEC.md`
 > Depende de: los specs de los 4 agentes (`intake`, `analysis`, `generator`, `validator`)
+> y de `specs/tools.md` (`inspect_project`, v2 brownfield)
 
 ## Responsabilidad
 
@@ -37,14 +38,20 @@ class PipelineResult(BaseModel):
 ```
 1. main(): mostrar opciones de modo: [1] EJECUTOR  [2] PROFESOR
 2. main(): recoger input inicial del usuario
-3. run_pipeline(): run_intake(text, mode)
+3. run_pipeline(): inspect_project(output_dir) → InspectionResult (v2 brownfield)
+   → output_dir es siempre el proyecto destino real, nunca `output_dir / "harness"`
+     (ese se genera de cero en el paso 6, exista o no el proyecto)
+   → si output_dir no existe o está vacío: InspectionResult(is_existing_project=False),
+     idéntico a v1
+4. run_pipeline(): run_intake(text, mode, inspection)
    → si needs_input: devolver status="needs_input" con las preguntas
-     (main() las muestra, amplía el input y relanza)
-4. run_pipeline(): run_analysis(spec parcial) → spec completa
-5. run_pipeline(): run_generator(spec, output_dir / "harness")
-6. run_pipeline(): run_validator(harness_path, spec)
-7. Si validator aprueba → status="approved"; main() muestra resumen y ruta
-8. Si validator rechaza → status="rejected"; main() muestra el informe
+     (main() las muestra, amplía el input y relanza; la `inspection` ya
+     calculada se reutiliza, no se recalcula en el reintento)
+5. run_pipeline(): run_analysis(spec parcial) → spec completa
+6. run_pipeline(): run_generator(spec, output_dir / "harness")
+7. run_pipeline(): run_validator(harness_path, spec)
+8. Si validator aprueba → status="approved"; main() muestra resumen y ruta
+9. Si validator rechaza → status="rejected"; main() muestra el informe
    y pregunta si reintentar
 ```
 

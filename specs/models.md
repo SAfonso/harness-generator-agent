@@ -65,6 +65,29 @@ class IntakeResult(BaseModel):
     questions: list[str]             # preguntas pendientes si status == "needs_input"
 ```
 
+### `InferredField` — un valor inferido por `inspect_project` (v2, brownfield)
+
+```python
+class InferredField(BaseModel):
+    value: str | list[str]
+    evidence: str                        # qué fichero/patrón concreto lo sustenta
+    confidence: Literal["high", "low"]   # high = manifiesto explícito, low = heurística débil
+```
+
+### `InspectionResult` — salida de `inspect_project` (v2, brownfield)
+
+```python
+class InspectionResult(BaseModel):
+    is_existing_project: bool
+    fields: dict[str, InferredField]  # clave = una de las 7 dimensiones (ver specs/tools.md#assess_input)
+    summary: str                       # resumen legible, lo primero que muestra PROFESOR
+```
+
+- `fields` nunca incluye una dimensión sin evidencia concreta — mejor ausente
+  (y que la pregunte `intake_agent`) que inventada.
+- `is_existing_project == False` → `fields == {}` y `summary == ""`; el flujo de
+  `intake_agent` es idéntico al de un proyecto desde cero (v1).
+
 ---
 
 ## Modelos runtime del harness generado (v2)

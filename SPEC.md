@@ -16,13 +16,14 @@ completamente personalizado y listo para usar con Claude Code.
 | Módulo | Spec | Errores conocidos | Código | Tests |
 |---|---|---|---|---|
 | Modelos de datos | `specs/models.md` | `errors/models.md` | `src/models/harness_spec.py` | indirectos |
-| Tools | `specs/tools.md` | `errors/tools.md` | `src/tools/` | `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py` |
+| Tools | `specs/tools.md` | `errors/tools.md` | `src/tools/` | `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py`, `tests/test_inspect_project.py` |
 | intake_agent (PROFESOR) | `specs/intake_agent.md` | `errors/intake_agent.md` | `src/agents/intake_agent.py` | `tests/test_intake_agent.py` |
 | analysis_agent (JUEZ) | `specs/analysis_agent.md` | `errors/analysis_agent.md` | `src/agents/analysis_agent.py` | `tests/test_analysis_agent.py` |
 | generator_agent (ESCRIBANO) | `specs/generator_agent.md` | `errors/generator_agent.md` | `src/agents/generator_agent.py` | `tests/test_generator_agent.py` |
 | validator_agent (FISCAL) | `specs/validator_agent.md` | `errors/validator_agent.md` | `src/agents/validator_agent.py` | `tests/test_validator_agent.py` |
 | Plantillas | `specs/templates.md` | `errors/templates.md` | `src/templates/` | vía render_template |
 | Entrypoint | `specs/main.md` | `errors/main.md` | `src/main.py` | `tests/test_main.py` |
+| Empaquetado | `specs/packaging.md` | `errors/packaging.md` | `pyproject.toml`, `skill/harness-agents/SKILL.md` | `tests/test_packaging.py` |
 
 Errores transversales (≥ 2 módulos o entorno): `errors/ERRORS.md`, que además
 define el protocolo de gestión de errores.
@@ -145,6 +146,9 @@ DIRECTOR:
 3. El validator_agent rechaza un harness con placeholders sin resolver
 4. El flujo completo termina en menos de 2 minutos para un input rico
 5. El harness generado puede usarse directamente en Claude Code sin modificaciones
+6. Sobre un proyecto ya empezado (brownfield), PROFESOR abre confirmando lo que
+   `inspect_project` infirió con `confidence="high"` en vez de preguntarlo de
+   cero, y solo interroga las dimensiones sin evidencia o con `confidence="low"`
 
 ---
 

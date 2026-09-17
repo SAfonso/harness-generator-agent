@@ -1,6 +1,6 @@
 # SPEC — módulo `tools`
 
-> Código: `src/tools/` · Tests: `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py`
+> Código: `src/tools/` · Tests: `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py`, `tests/test_inspect_project.py`
 > Errores conocidos: `errors/tools.md` · Reglas transversales: `SPEC.md`
 
 ## Responsabilidad
@@ -110,6 +110,55 @@ class ValidationReport(BaseModel):
 
 - `passed == True` solo si los 8 checks pasan sin excepciones.
 - Cada check fallido produce un `CheckResult` con qué se esperaba vs qué se encontró.
+
+---
+
+## `inspect_project` — ⚠️ definida en spec, implementación pendiente (brownfield, v2)
+
+**Fichero (futuro):** `src/tools/inspect_project.py`
+
+**Firma:**
+```python
+inspect_project(path: Path) -> InspectionResult
+```
+
+**Contrato:**
+- Solo lectura: nunca escribe ni modifica nada en `path`.
+- Detecta si `path` es un proyecto **ya empezado** (`is_existing_project`) por
+  señales concretas, no por "hay algún fichero":
+  - manifiestos de dependencias conocidos (`package.json`, `pyproject.toml`,
+    `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, ...)
+  - `.git/` con al menos un commit
+  - `README.md` o `CLAUDE.md` con contenido no trivial
+  - Un directorio vacío, o con solo un `.git` sin commits, es
+    `is_existing_project = False` — mismo comportamiento que v1 (greenfield).
+- Si `is_existing_project`, intenta rellenar `InspectionResult.fields` para las
+  7 dimensiones de `assess_input` (`project_type`, `stack`, `data_sources`,
+  `constraints`, `acceptance_criteria`, `deliverable`, `time_available`):
+  - `project_type` y `stack`: a partir de manifiestos y estructura de carpetas.
+    Reutiliza las keywords de `classify_project` en vez de duplicar la
+    heurística — construye una `HarnessSpec` mínima a partir de lo leído
+    (manifiestos + estructura) y se la pasa a `classify_project`.
+  - `data_sources`, `constraints`, `acceptance_criteria`, `deliverable`,
+    `time_available`: normalmente no inferibles del código; solo se rellenan
+    si hay evidencia explícita (ej. `CHECKPOINTS.md` o `feature_list.json` ya
+    existentes de una ejecución previa del harness).
+  - Cada campo lleva su `evidence` (qué fichero/patrón lo sustenta) y
+    `confidence`: `"high"` si viene de un manifiesto explícito, `"low"` si es
+    heurística débil (ej. solo el nombre de una carpeta).
+  - Nunca inventa un valor sin evidencia — dimensión sin señal → ausente de
+    `fields`, no un valor por defecto.
+- `summary`: 3–5 líneas legibles que `intake_agent` muestra tal cual al abrir
+  la conversación en modo brownfield (ver `specs/intake_agent.md`).
+
+**Reglas:**
+- No falla si `path` no es un proyecto reconocible: devuelve
+  `InspectionResult(is_existing_project=False, fields={}, summary="")`, nunca
+  una excepción.
+- No decide el tipo de proyecto por sí sola con confianza `"high"` si las
+  señales son contradictorias (ej. `package.json` de frontend y `requirements.txt`
+  de un pipeline de datos en el mismo repo) — en ese caso `confidence="low"` y
+  dice ambas señales en `evidence`, dejando que PROFESOR confirme con el usuario.
 
 ---
 
