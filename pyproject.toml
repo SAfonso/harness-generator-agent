@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "harness-agents"
+version = "0.1.0"
+description = "Sistema multi-agente que entrevista o inspecciona un proyecto y genera un harness personalizado para Claude Code."
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic",
+    "jinja2",
+]
+
+[project.scripts]
+harness-agents = "src.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
