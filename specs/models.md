@@ -24,6 +24,7 @@ class HarnessSpec(BaseModel):
     acceptance_criteria: list[str]  # definición de done
     deliverable: str            # qué se entrega al final
     time_available: str         # ej: "2 días", "2 semanas"
+    audit_findings: list[AuditFinding] = []  # solo brownfield — de InspectionResult.findings
 
     # Decidido por analysis_agent
     agent_roles: list[AgentRole]    # roles y modos de cada agente
@@ -80,13 +81,37 @@ class InferredField(BaseModel):
 class InspectionResult(BaseModel):
     is_existing_project: bool
     fields: dict[str, InferredField]  # clave = una de las 7 dimensiones (ver specs/tools.md#assess_input)
+    findings: list[AuditFinding] = []  # problemas detectados + cómo arreglarlos (auditoría)
     summary: str                       # resumen legible, lo primero que muestra PROFESOR
 ```
 
 - `fields` nunca incluye una dimensión sin evidencia concreta — mejor ausente
   (y que la pregunte `intake_agent`) que inventada.
-- `is_existing_project == False` → `fields == {}` y `summary == ""`; el flujo de
-  `intake_agent` es idéntico al de un proyecto desde cero (v1).
+- `is_existing_project == False` → `fields == {}`, `findings == []` y
+  `summary == ""`; el flujo de `intake_agent` es idéntico al de un proyecto
+  desde cero (v1).
+
+### `AuditFinding` — un problema detectado por `inspect_project` (v2, brownfield)
+
+```python
+class AuditFinding(BaseModel):
+    check: str                              # id corto y estable, ej. "no_git_remote"
+    severity: Literal["blocking", "warning"]
+    description: str                        # qué se encontró, una frase
+    suggested_fix: str                      # qué tarea concreta lo resolvería
+```
+
+- `severity="blocking"` únicamente cuando el problema rompe la mecánica del
+  harness **generado** (v2): sin repo git o sin remoto, NOTARIO no puede crear
+  rama/push/PR. Todo lo demás (higiene: tests, CI, documentación) es `"warning"`.
+- `inspect_project` solo detecta problemas **mecánicos y deterministas** —
+  nunca calidad de código, seguridad o arquitectura (eso requiere razonamiento,
+  no heurísticas de fichero/keyword). Para eso emite un único finding fijo que
+  recomienda ejecutar `/code-review` (y `/security-review` si aplica) — no lo
+  sustituye. Ver `specs/tools.md#inspect_project`.
+- Cada `AuditFinding` se convierte en una tarea inicial de `feature_list.json`
+  (ver `specs/generator_agent.md`, `specs/templates.md`) — nunca queda solo
+  como texto informativo.
 
 ---
 

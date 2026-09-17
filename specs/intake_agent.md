@@ -41,6 +41,12 @@ cero (v1), sin ningún paso adicional.
      defecto.
    - Dimensiones ausentes de `inspection.fields`: siguen el flujo normal de
      los pasos 1–5 de más abajo (batch o conversacional según `assess_input`).
+   - `inspection.findings` (auditoría, ver `specs/tools.md#inspect_project`):
+     PROFESOR los comenta como parte del mismo mensaje de apertura (ya vienen
+     redactados dentro de `inspection.summary`) — no genera preguntas nuevas
+     por ellos, no bloquean `status="complete"`. Al construir la `HarnessSpec`
+     final se copian tal cual a `spec.audit_findings` (paso 7 de más abajo),
+     para que `generator_agent` los convierta en tareas del backlog.
 1. Pregunta de clasificación inicial: `¿Qué tipo de proyecto es?` — se omite
    si `project_type` ya viene con `confidence == "high"` desde `inspection`
    (paso 0) y el usuario no la ha corregido.

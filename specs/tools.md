@@ -113,9 +113,9 @@ class ValidationReport(BaseModel):
 
 ---
 
-## `inspect_project` — ⚠️ definida en spec, implementación pendiente (brownfield, v2)
+## `inspect_project` (brownfield, v2)
 
-**Fichero (futuro):** `src/tools/inspect_project.py`
+**Fichero:** `src/tools/inspect_project.py`
 
 **Firma:**
 ```python
@@ -159,6 +159,34 @@ inspect_project(path: Path) -> InspectionResult
   señales son contradictorias (ej. `package.json` de frontend y `requirements.txt`
   de un pipeline de datos en el mismo repo) — en ese caso `confidence="low"` y
   dice ambas señales en `evidence`, dejando que PROFESOR confirme con el usuario.
+
+### Auditoría — `InspectionResult.findings`
+
+Además de `fields`, si `is_existing_project`, `inspect_project` audita problemas
+**mecánicos y deterministas** que afectarían al harness generado (v2). Cada uno
+produce un `AuditFinding` (`specs/models.md`):
+
+| `check` | `severity` | Condición | Por qué |
+|---|---|---|---|
+| `no_git_repo` | `blocking` | Hay manifiestos o docs pero no existe `.git/` | NOTARIO no puede crear rama/commit/PR sin repo git |
+| `no_git_remote` | `blocking` | `.git/` existe pero `git remote` no devuelve ninguno | NOTARIO no puede hacer push/PR sin remoto |
+| `no_ci` | `warning` | No hay `.github/workflows/*`, `.gitlab-ci.yml` ni `.circleci/config.yml` | CENTINELA no puede verificar CI — hace merge solo si está en verde, y sin CI configurado no hay nada que verificar |
+| `no_tests` | `warning` | No hay directorio `tests/`/`test/`/`__tests__`/`spec/` ni ficheros `test_*`/`*_test.*`/`*.spec.*` | FISCAL(+QA) revisa contra criterios, pero sin tests existentes no hay red de seguridad previa |
+| `empty_docs` | `warning` | Ni `README.md` ni `CLAUDE.md` tienen contenido no trivial | El harness parte sin contexto documentado del proyecto |
+| `code_quality_review_pending` | `warning` | Siempre que `is_existing_project` y hay manifiestos (hay código real) | Calidad/seguridad del código requiere razonamiento, no heurísticas — `inspect_project` nunca lo evalúa él mismo |
+
+- `no_ci` sube a evidencia de que **CENTINELA** (v2) no tiene nada que verificar
+  hasta que se configure CI — no bloquea, pero se marca como tarea temprana.
+- `code_quality_review_pending.suggested_fix` es siempre una variación de
+  "ejecutar `/code-review` (y `/security-review` si el proyecto maneja datos
+  sensibles) sobre el código existente antes de seguir añadiendo funcionalidad"
+  — `inspect_project` **delega**, nunca sustituye esa revisión.
+- Cada `AuditFinding.suggested_fix` es lo bastante concreto para ser el título
+  de una tarea de `feature_list.json` sin reescritura (ver `specs/generator_agent.md`).
+- Los checks de auditoría son heurísticas v2 (nombres de fichero/directorio,
+  `git remote`) — igual que `assess_input`/`classify_project`, no cubren todos
+  los stacks ni convenciones posibles. Ampliar la lista de patrones es un
+  cambio de spec, no de código suelto.
 
 ---
 

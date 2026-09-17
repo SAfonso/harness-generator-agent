@@ -55,3 +55,7 @@ run_generator(spec: HarnessSpec, output_dir: Path) -> list[Path]
   (`config.py#_CORE_AGENTS`)
 - Genera `progress/ledger.json` vacío con claves `decisions: []` y `tasks: []`
   (modelo `Ledger` en `specs/models.md`) como cuarto fichero, antes de `init.sh`
+- Si `spec.audit_findings` no está vacío (brownfield, ver `specs/tools.md#inspect_project`),
+  `feature_list.json.j2` añade una tarea por cada `AuditFinding` a continuación
+  de las 3 tareas semilla fijas — ver `specs/templates.md` para el mapeo
+  severity → priority/complejidad

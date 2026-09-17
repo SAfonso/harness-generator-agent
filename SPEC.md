@@ -149,6 +149,10 @@ DIRECTOR:
 6. Sobre un proyecto ya empezado (brownfield), PROFESOR abre confirmando lo que
    `inspect_project` infirió con `confidence="high"` en vez de preguntarlo de
    cero, y solo interroga las dimensiones sin evidencia o con `confidence="low"`
+7. Si `inspect_project` detecta un problema mecánico (sin repo/remoto git, sin
+   CI, sin tests, documentación vacía), el harness generado incluye una tarea
+   inicial en `feature_list.json` con una propuesta concreta de arreglo — nunca
+   se queda solo como comentario informativo
 
 ---
 

@@ -49,6 +49,14 @@ src/templates/
   (`alta | media | baja`) — determina el modelo con que el leader la lanza
 - El backlog semilla no contiene objetivos amplios: el entregable entra como
   tarea de **descomposición** asignada al planner, no como tarea de implementación
+- Si `spec.audit_findings` no está vacío (brownfield), `feature_list.json.j2`
+  añade una tarea por cada `AuditFinding`, con `id` continuando tras las 3
+  tareas semilla fijas, `depends_on: [1]` (necesita el entorno inicializado) y:
+  - `title`: `"Arreglar: {description} — {suggested_fix}"`
+  - `severity="blocking"` → `priority="high"`, `complejidad="media"`
+  - `severity="warning"` → `priority="medium"`, `complejidad="baja"`
+  Ninguna de estas tareas necesita descomposición del planner — el
+  `suggested_fix` ya es lo bastante concreto para ser una tarea atómica.
 
 ## v2 — NOTARIO, CENTINELA y ledger
 
