@@ -49,12 +49,21 @@ Reglas clave del harness generado:
 - **Núcleo fijo de agentes**: leader, planner, implementer y reviewer están
   siempre; tester se suma solo en proyectos de tipo `agent`.
 
-## Uso
+## Instalación
 
-```bash
-pip install pydantic jinja2
-python3 -m src.main
-```
+Dos vías, mismo código (`src/`), ver `specs/packaging.md`:
+
+- **Pip**, para usarlo fuera de Claude Code:
+  ```bash
+  pip install -e .
+  harness-agents
+  ```
+- **Skill de Claude Code**, para invocarlo con `/harness-agents` desde
+  cualquier proyecto abierto en Claude Code, sin instalación previa (la skill
+  comprueba e instala `pydantic`/`jinja2` si faltan): copia o enlaza
+  `skill/harness-agents/` en tu carpeta de skills.
+
+## Uso
 
 1. Elige modo: `[1] EJECUTOR` (autonomía) o `[2] PROFESOR` (te reta y pregunta).
 2. Describe tu proyecto cubriendo las 7 dimensiones: tipo, stack, fuentes de
@@ -62,9 +71,13 @@ python3 -m src.main
 3. Si falta información, el intake te pide las dimensiones que faltan.
 4. El harness aprobado queda en `harness/` — cópialo a la raíz de tu proyecto.
 
-Para aplicarlo a un **proyecto ya empezado** (brownfield): genera el harness
-aparte, fusiona `CLAUDE.md` a mano y ajusta `feature_list.json` al trabajo
-que realmente queda. Soporte nativo pendiente para v2.
+**Proyecto ya empezado (brownfield):** antes de preguntar, el pipeline
+inspecciona el directorio destino (`inspect_project`, ver `specs/tools.md`) —
+manifiestos de dependencias, historial git, `README.md`/`CLAUDE.md` existentes.
+Si infiere el tipo de proyecto o el stack con evidencia clara, PROFESOR lo da
+por bueno y solo confirma lo dudoso o pregunta lo que falte, en vez de repetir
+la entrevista completa. Fusionar el resultado con un `CLAUDE.md`/
+`feature_list.json` ya existentes en el proyecto sigue siendo manual.
 
 ## Desarrollo
 
@@ -76,11 +89,16 @@ Metodología **SDD + TDD** estricta: actualizar spec → escribir test → imple
 - `CLAUDE.md` — reglas generales y tabla de redirección por módulo
 
 ```bash
-python3 -m pytest tests/ -q     # 37 tests
+python3 -m pytest tests/ -q     # 69 tests
 ```
 
 ## Estado
 
 v1 funcional: pipeline completo de extremo a extremo (intake → analysis →
-generator → validator) con 37 tests en verde. Pendiente para v2: tool
-`update_spec`, modo brownfield, clasificación por LLM en vez de keywords.
+generator → validator). v2 en marcha: empaquetado (pip + skill de Claude Code)
+y modo brownfield (`inspect_project` + confirmación en vez de entrevista desde
+cero) ya implementados, 69 tests en verde. Pendiente: tool `update_spec`,
+clasificación por LLM en vez de keywords, inferir el resto de dimensiones
+(`data_sources`, `constraints`, `acceptance_criteria`, `deliverable`,
+`time_available`) en brownfield cuando haya evidencia explícita
+(`CHECKPOINTS.md`/`feature_list.json` de una ejecución previa).
