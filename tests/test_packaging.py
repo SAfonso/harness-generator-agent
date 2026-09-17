@@ -28,8 +28,13 @@ def test_pyproject_requires_python_3_12_or_newer():
     assert _pyproject()["project"]["requires-python"] == ">=3.12"
 
 
-def test_skill_file_exists_and_points_to_src_main():
+def test_skill_file_uses_the_installed_entry_point_not_the_raw_module():
     skill_path = REPO_ROOT / "skill" / "harness-agents" / "SKILL.md"
+    content = skill_path.read_text(encoding="utf-8")
 
     assert skill_path.is_file()
-    assert "src.main" in skill_path.read_text(encoding="utf-8")
+    assert "pip install -e" in content
+    # el comando de arranque real es el entry point instalado, no el módulo
+    # en crudo (bug real documentado en errors/packaging.md)
+    assert "```bash\nharness-agents\n```" in content
+    assert "```bash\npython3 -m src.main\n```" not in content

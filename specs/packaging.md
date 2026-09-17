@@ -41,25 +41,34 @@ Dos canales, una sola fuente de verdad (`src/`):
 **Contrato:**
 - Es un wrapper fino: no vendoriza ni copia `src/`, lo referencia por ruta
   relativa al repo clonado.
-- Al invocarse (`/harness-agents`):
-  1. Comprueba que `pydantic` y `jinja2` están disponibles en el intérprete
-     activo; si falta alguna, la instala (`pip install pydantic jinja2`) antes
-     de continuar — nunca falla en silencio ni asume que ya están.
-  2. Ejecuta `python3 -m src.main` con el cwd puesto en la raíz del repo.
-- No requiere el paquete pip instalado (canal 1) para funcionar — es una vía
-  independiente sobre el mismo código, pensada para quien ya tiene el repo
-  clonado y quiere arrancarlo sin salir de Claude Code.
-- Es responsabilidad de la skill, no del pipeline (`src/main.py`), resolver
-  la ruta del repo — `run_pipeline`/`main()` no saben si se invocan desde pip
-  o desde la skill.
+- `run_pipeline(text, mode, output_dir)` usa `output_dir` — en `main()`,
+  `Path.cwd()` en el momento de ejecutar — como el proyecto **destino**
+  (donde se inspecciona y se genera `harness/`). Por eso la skill **nunca**
+  ejecuta `python3 -m src.main` directamente: ese invocación exige `cwd` en
+  la raíz del propio repo del generador para que `import src` resuelva, lo
+  que pondría `output_dir` en el repo del generador en vez de en el proyecto
+  del usuario — justo el escenario que rompe el caso de uso brownfield.
+- Al invocarse (`/harness-agents`), con el `cwd` ya puesto en el proyecto del
+  **usuario** (nunca en el repo del generador):
+  1. Comprueba que el comando `harness-agents` (canal 1, pip) está disponible
+     (`command -v harness-agents`); si no, lo instala en modo editable desde
+     el repo clonado del generador (`pip install -e <ruta-del-repo>`) — eso
+     arrastra `pydantic`/`jinja2` como dependencias declaradas en
+     `pyproject.toml`, sin instalarlas sueltas.
+  2. Ejecuta `harness-agents` (el entry point instalado) sin tocar `cwd` —
+     así `Path.cwd()` sigue siendo el proyecto del usuario.
+- Sí depende del paquete pip (canal 1) para funcionar — a diferencia del
+  diseño original, la skill no reimplementa el arranque: instala y usa el
+  mismo entry point que un usuario de pip tendría.
 
 ---
 
 ## Reglas del módulo
 
-- `pyproject.toml` y `skill/harness-agents/SKILL.md` apuntan siempre al mismo
-  `src/main:main` — un cambio de firma en `main()` (`specs/main.md`) obliga a
-  revisar ambos.
+- `pyproject.toml` declara el entry point (`src.main:main`) y `skill/harness-agents/SKILL.md`
+  usa siempre ese entry point ya instalado (`harness-agents`), nunca el módulo
+  en crudo (`python3 -m src.main`) — un cambio de firma en `main()`
+  (`specs/main.md`) obliga a revisar ambos.
 - Ninguno de los dos canales contiene lógica de negocio: si hace falta lógica
   nueva, va en `src/`, no en el `SKILL.md` ni en scripts de `pyproject.toml`.
 - La skill es la vía recomendada para uso dentro de Claude Code; el paquete pip
@@ -71,8 +80,10 @@ Dos canales, una sola fuente de verdad (`src/`):
   - `pyproject.toml` parsea (`tomllib`) y declara `name == "harness-agents"`,
     el entry point `harness-agents` apuntando a `src.main:main`, y
     `pydantic`/`jinja2` como dependencias.
-  - `skill/harness-agents/SKILL.md` existe y su contenido referencia
-    `src.main` (o `python3 -m src.main`) como forma de arranque.
+  - `skill/harness-agents/SKILL.md` existe, referencia el comando instalado
+    `harness-agents` como forma de arranque, e incluye `pip install -e` como
+    instalación de respaldo — y **nunca** instruye `python3 -m src.main`
+    como forma de arrancar (ver bug documentado en `errors/packaging.md`).
 - No se testea la instalación real (`pip install -e .`) ni la ejecución de la
   skill dentro de Claude Code — eso es verificación manual, fuera del alcance
   de pytest.

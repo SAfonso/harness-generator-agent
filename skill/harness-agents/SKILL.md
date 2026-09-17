@@ -5,28 +5,46 @@ description: "Genera un harness multi-agente personalizado para Claude Code entr
 
 # /harness-agents
 
-Arranca el generador de harness (`harness-generator-agent`) sobre el proyecto actual.
-No vendoriza el código — referencia el repo clonado por su ruta relativa.
+Arranca el generador de harness (`harness-generator-agent`) sobre **el
+proyecto actual** — el directorio desde el que se invoca esta skill, nunca el
+repo del generador. Esto importa: el generador usa el directorio de trabajo
+en el momento de ejecutarse como destino (dónde inspecciona y dónde escribe
+`harness/`), así que el comando final debe lanzarse con el `cwd` puesto en el
+proyecto del usuario.
 
 ## Antes de arrancar
 
-Comprueba que `pydantic` y `jinja2` están disponibles en el intérprete activo.
-Si falta alguna, instálala antes de continuar (nunca asumas que ya están):
+1. Comprueba si el comando `harness-agents` ya está disponible:
+   ```bash
+   command -v harness-agents
+   ```
+2. Si no lo está, instálalo en modo editable desde el repo clonado del
+   generador (`pydantic`/`jinja2` se instalan solos como dependencias
+   declaradas en su `pyproject.toml`):
+   ```bash
+   pip install -e /ruta/al/repo/harness-generator-agent
+   ```
 
-```bash
-python3 -c "import pydantic, jinja2" 2>/dev/null || pip install pydantic jinja2
-```
+**Nunca** ejecutes `python3 -m src.main` directamente como atajo: exige que el
+`cwd` esté en la raíz del propio repo del generador para que `import src`
+resuelva, y eso pondría el harness generado dentro del repo del generador en
+vez de en el proyecto del usuario — justo lo que rompe el caso de uso
+brownfield. El entry point instalado no tiene ese problema: funciona desde
+cualquier directorio.
 
 ## Arranque
 
-Desde la raíz del repo clonado de `harness-generator-agent`:
+Con el `cwd` ya en la raíz del proyecto del usuario (nunca en el repo del
+generador):
 
 ```bash
-python3 -m src.main
+harness-agents
 ```
 
 El menú interactivo pide elegir modo (`EJECUTOR`/`PROFESOR`) y describir el
-proyecto. Si el directorio de salida ya es un proyecto empezado, el propio
-pipeline lo detecta e inspecciona antes de preguntar (ver `specs/main.md`,
-`specs/tools.md#inspect_project`). El harness resultante queda en `harness/`
-dentro del directorio de salida elegido.
+proyecto. Si el directorio ya es un proyecto empezado, el propio pipeline lo
+detecta e inspecciona antes de preguntar — infiere lo que puede con evidencia
+y audita problemas mecánicos (sin repo/remoto git, sin CI, sin tests,
+documentación vacía), que entran como tareas iniciales del backlog generado
+(ver `specs/tools.md#inspect_project`). El harness resultante queda en
+`harness/` dentro del proyecto.
