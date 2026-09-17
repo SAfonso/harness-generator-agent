@@ -41,6 +41,18 @@ class IntakeResult(BaseModel):
     questions: list[str] = []
 
 
+class InferredField(BaseModel):
+    value: str | list[str]
+    evidence: str
+    confidence: Literal["high", "low"]
+
+
+class InspectionResult(BaseModel):
+    is_existing_project: bool
+    fields: dict[str, InferredField] = {}
+    summary: str = ""
+
+
 # --- Modelos runtime del harness generado (v2) ---------------------------
 # No viajan por este pipeline (intake→analysis→generator→validator): describen
 # artefactos del harness YA generado en ejecución. Ver specs/models.md.
