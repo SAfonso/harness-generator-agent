@@ -128,3 +128,32 @@ def test_no_inspection_argument_keeps_v1_behaviour():
 
     assert result.status == "needs_input"
     assert result.spec is None
+
+
+def test_inspection_findings_are_copied_into_spec_audit_findings():
+    from src.models.harness_spec import AuditFinding
+
+    text = (
+        "Los datos vienen de una base de datos. Sin restricciones. "
+        "Done cuando funciona. Entrego un informe. Tengo 3 días."
+    )
+    finding = AuditFinding(
+        check="no_ci",
+        severity="warning",
+        description="No hay configuración de CI.",
+        suggested_fix="Añadir un pipeline de CI mínimo.",
+    )
+    inspection = InspectionResult(
+        is_existing_project=True,
+        fields={
+            "project_type": InferredField(value="api", evidence="requirements.txt", confidence="high"),
+            "stack": InferredField(value=["Python"], evidence="requirements.txt", confidence="high"),
+        },
+        findings=[finding],
+        summary="Proyecto existente detectado.",
+    )
+
+    result = run_intake(text, mode="EJECUTOR", inspection=inspection)
+
+    assert result.status == "complete"
+    assert result.spec.audit_findings == [finding]

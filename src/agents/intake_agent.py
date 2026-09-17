@@ -106,6 +106,7 @@ def run_intake(text: str, mode: str, inspection: InspectionResult | None = None)
         acceptance_criteria=_detect_acceptance_criteria(text_lower),
         deliverable=", ".join(_present(_DELIVERABLE_TOKENS, text_lower)),
         time_available=", ".join(_present(_TIME_TOKENS, text_lower)),
+        audit_findings=inspection.findings,
         mode=mode,
         llm_config=_detect_llm_config(text_lower),
     )
