@@ -1,7 +1,13 @@
 import subprocess
 from pathlib import Path
 
-from src.models.harness_spec import HarnessSpec, InferredField, InspectionResult, LLMConfig
+from src.models.harness_spec import (
+    AuditFinding,
+    HarnessSpec,
+    InferredField,
+    InspectionResult,
+    LLMConfig,
+)
 from src.tools.classify_project import classify_project
 
 _MANIFEST_FILES = [
@@ -29,6 +35,10 @@ _DEPENDENCY_KEYWORDS = [
     "click", "typer",
 ]
 
+_TEST_DIR_NAMES = ["tests", "test", "spec", "__tests__"]
+_TEST_FILE_PATTERNS = ["test_*.py", "*_test.py", "*.test.js", "*.spec.js", "*_spec.rb"]
+_CI_PATHS = [".gitlab-ci.yml", ".circleci/config.yml"]
+
 
 def inspect_project(path: Path) -> InspectionResult:
     if not path.is_dir():
@@ -51,9 +61,13 @@ def inspect_project(path: Path) -> InspectionResult:
     if stack_field is not None:
         fields["stack"] = stack_field
 
-    summary = _build_summary(path, manifests, has_git_history, has_docs, fields)
+    findings = _audit_project(path, manifests, has_git_history, has_docs)
 
-    return InspectionResult(is_existing_project=True, fields=fields, summary=summary)
+    summary = _build_summary(path, manifests, has_git_history, has_docs, fields, findings)
+
+    return InspectionResult(
+        is_existing_project=True, fields=fields, findings=findings, summary=summary,
+    )
 
 
 def _read_manifests(path: Path) -> dict[str, str]:
@@ -143,12 +157,96 @@ def _infer_stack(manifests: dict[str, str]) -> InferredField | None:
     )
 
 
+def _has_git_remote(path: Path) -> bool:
+    result = subprocess.run(
+        ["git", "-C", str(path), "remote"],
+        capture_output=True, text=True,
+    )
+    return result.returncode == 0 and bool(result.stdout.strip())
+
+
+def _has_tests(path: Path) -> bool:
+    if any((path / name).is_dir() for name in _TEST_DIR_NAMES):
+        return True
+    return any(any(path.rglob(pattern)) for pattern in _TEST_FILE_PATTERNS)
+
+
+def _has_ci(path: Path) -> bool:
+    workflows = path / ".github" / "workflows"
+    if workflows.is_dir() and any(workflows.iterdir()):
+        return True
+    return any((path / ci_path).is_file() for ci_path in _CI_PATHS)
+
+
+def _audit_project(
+    path: Path, manifests: dict[str, str], has_git_history: bool, has_docs: bool,
+) -> list[AuditFinding]:
+    findings: list[AuditFinding] = []
+
+    if not (path / ".git").is_dir():
+        findings.append(AuditFinding(
+            check="no_git_repo",
+            severity="blocking",
+            description="El proyecto no es un repositorio git.",
+            suggested_fix="git init, primer commit y configurar un remoto — "
+                           "NOTARIO no puede crear ramas ni PRs sin repo git.",
+        ))
+    elif not _has_git_remote(path):
+        findings.append(AuditFinding(
+            check="no_git_remote",
+            severity="blocking",
+            description="El repositorio git no tiene ningún remoto configurado.",
+            suggested_fix="Configurar un remoto (ej. git remote add origin <url>) "
+                           "y hacer push — NOTARIO no puede abrir PRs sin remoto.",
+        ))
+
+    if not _has_ci(path):
+        findings.append(AuditFinding(
+            check="no_ci",
+            severity="warning",
+            description="No hay configuración de CI (.github/workflows, .gitlab-ci.yml, .circleci).",
+            suggested_fix="Añadir un pipeline de CI mínimo (lint + tests) — "
+                           "CENTINELA no tiene nada que verificar antes de mergear sin él.",
+        ))
+
+    if not _has_tests(path):
+        findings.append(AuditFinding(
+            check="no_tests",
+            severity="warning",
+            description="No se ha encontrado ningún test existente en el proyecto.",
+            suggested_fix="Añadir una cobertura mínima de tests sobre el flujo "
+                           "principal antes de que FISCAL empiece a revisar cambios.",
+        ))
+
+    if not has_docs:
+        findings.append(AuditFinding(
+            check="empty_docs",
+            severity="warning",
+            description="Ni README.md ni CLAUDE.md tienen contenido documentado.",
+            suggested_fix="Documentar el proyecto (README.md o CLAUDE.md) para que "
+                           "el harness parta con contexto real, no de cero.",
+        ))
+
+    if manifests:
+        findings.append(AuditFinding(
+            check="code_quality_review_pending",
+            severity="warning",
+            description="El código existente no ha sido auditado por calidad ni seguridad.",
+            suggested_fix="Ejecutar /code-review (y /security-review si el proyecto "
+                           "maneja datos sensibles) sobre el código existente antes "
+                           "de seguir añadiendo funcionalidad.",
+        ))
+
+    return findings
+
+
 def _build_summary(
     path: Path,
     manifests: dict[str, str],
     has_git_history: bool,
     has_docs: bool,
     fields: dict[str, InferredField],
+    findings: list[AuditFinding],
 ) -> str:
     lines = [f"Proyecto ya empezado detectado en {path}."]
     if manifests:
@@ -165,6 +263,9 @@ def _build_summary(
         lines.append(f"Stack inferido: {', '.join(field.value)} ({field.confidence}).")
     if not fields:
         lines.append("Sin señales suficientes para inferir tipo o stack — se preguntará en la entrevista.")
+    if findings:
+        resumen_hallazgos = "; ".join(f"{f.check} ({f.severity})" for f in findings)
+        lines.append(f"Hallazgos de auditoría: {resumen_hallazgos}.")
     return " ".join(lines)
 
 

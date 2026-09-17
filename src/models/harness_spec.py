@@ -13,6 +13,14 @@ class LLMConfig(BaseModel):
     default_model: str | None = None
     per_agent: dict[str, str] = {}
 
+
+class AuditFinding(BaseModel):
+    check: str
+    severity: Literal["blocking", "warning"]
+    description: str
+    suggested_fix: str
+
+
 class HarnessSpec(BaseModel):
     # Recogido por intake_agent
     project_type: Literal["data_pipeline", "api", "web", "agent", "cli", "other"]
@@ -23,6 +31,7 @@ class HarnessSpec(BaseModel):
     acceptance_criteria: list[str]
     deliverable: str
     time_available: str
+    audit_findings: list[AuditFinding] = []  # solo brownfield — de InspectionResult.findings
 
     # Decidido por analysis_agent
     agent_roles: list[AgentRole] = []
@@ -50,6 +59,7 @@ class InferredField(BaseModel):
 class InspectionResult(BaseModel):
     is_existing_project: bool
     fields: dict[str, InferredField] = {}
+    findings: list[AuditFinding] = []
     summary: str = ""
 
 
