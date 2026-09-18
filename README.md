@@ -59,9 +59,12 @@ Dos vías, mismo código (`src/`), ver `specs/packaging.md`:
   harness-agents
   ```
 - **Skill de Claude Code**, para invocarlo con `/harness-agents` desde
-  cualquier proyecto abierto en Claude Code, sin instalación previa (la skill
-  comprueba e instala `pydantic`/`jinja2` si faltan): copia o enlaza
-  `skill/harness-agents/` en tu carpeta de skills.
+  cualquier proyecto abierto en Claude Code: copia o enlaza
+  `skill/harness-agents/` en tu carpeta de skills. Si el comando `harness-agents`
+  no está ya instalado, la skill lo instala ella misma (`pip install -e
+  <repo>`, que arrastra `pydantic`/`jinja2`) — nunca ejecuta el módulo en
+  crudo, porque eso pondría el harness generado en el repo del generador en
+  vez de en tu proyecto (ver `errors/packaging.md`).
 
 ## Uso
 
