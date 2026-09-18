@@ -1,7 +1,9 @@
 """Unit tests for run_pipeline — written before implementation (TDD)."""
 
+import pytest
+
 import src.main as main_module
-from src.main import PipelineResult, run_pipeline
+from src.main import PipelineResult, main, run_pipeline
 
 RICH_PIPELINE_TEXT = (
     "Quiero construir un pipeline de datos con spark y databricks. "
@@ -80,3 +82,41 @@ def test_broken_generation_is_rejected_with_informe(tmp_path, monkeypatch):
     assert result.validator is not None
     assert result.validator.approved is False
     assert any("init.sh" in line for line in result.validator.informe)
+
+
+def test_main_with_text_flag_runs_noninteractively_and_approves(tmp_path, capsys):
+    main([
+        "--text", RICH_PIPELINE_TEXT,
+        "--mode", "EJECUTOR",
+        "--output-dir", str(tmp_path),
+    ])
+
+    captured = capsys.readouterr()
+    assert "aprobado" in captured.out.lower()
+    assert (tmp_path / "harness" / "CLAUDE.md").is_file()
+
+
+def test_main_with_text_flag_defaults_to_ejecutor_mode(tmp_path):
+    main(["--text", RICH_PIPELINE_TEXT, "--output-dir", str(tmp_path)])
+
+    assert (tmp_path / "harness" / "CLAUDE.md").is_file()
+
+
+def test_main_with_text_flag_exits_nonzero_on_needs_input(tmp_path, capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        main(["--text", "quiero hacer algo con python", "--output-dir", str(tmp_path)])
+
+    assert exc_info.value.code != 0
+    captured = capsys.readouterr()
+    assert "falta" in captured.out.lower()
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_main_without_text_flag_still_uses_interactive_path(monkeypatch):
+    def _boom(*args, **kwargs):
+        raise AssertionError("input() invocado — confirma que sigue siendo la ruta interactiva")
+
+    monkeypatch.setattr("builtins.input", _boom)
+
+    with pytest.raises(AssertionError):
+        main([])

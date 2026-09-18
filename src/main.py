@@ -1,9 +1,11 @@
 """main — entrypoint: orquesta intake → analysis → generator → validator.
 
 run_pipeline() es el orquestador puro (testeable, sin I/O de consola);
-main() es el wrapper interactivo fino.
+main() despacha a _run_noninteractive() (con --text, para agentes vía Bash)
+o _run_interactive() (sin --text, wrapper interactivo para un humano).
 """
 
+import argparse
 from pathlib import Path
 from typing import Literal
 
@@ -43,7 +45,53 @@ def run_pipeline(text: str, mode: str, output_dir: Path) -> PipelineResult:
     )
 
 
-def main() -> None:  # pragma: no cover — wrapper interactivo, sin lógica propia
+def _parse_args(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Genera un harness multi-agente personalizado para Claude Code.",
+    )
+    parser.add_argument(
+        "--text",
+        default=None,
+        help="Descripción del proyecto. Si se da, arranca en modo no interactivo "
+             "(sin input()) — pensado para invocarse desde un agente vía Bash.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["EJECUTOR", "PROFESOR"],
+        default="EJECUTOR",
+        help="Modo del harness. Solo aplica junto a --text.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="Directorio destino. Solo aplica junto a --text (por defecto, el cwd actual).",
+    )
+    return parser.parse_args(argv)
+
+
+def _run_noninteractive(text: str, mode: str, output_dir: Path) -> None:
+    result = run_pipeline(text, mode, output_dir)
+
+    if result.status == "needs_input":
+        print("Falta información sobre estas dimensiones:")
+        for question in result.questions:
+            print(f"  - {question}")
+        print("Vuelve a invocar con --text incluyendo esta información.")
+        raise SystemExit(1)
+
+    if result.status == "approved":
+        print(f"Harness aprobado ✅ → {result.harness_path}")
+        print(f"{len(result.generated_files)} ficheros generados.")
+        return
+
+    print("Harness rechazado ❌ — informe del validator:")
+    for line in result.validator.informe:
+        print(f"  - {line}")
+    raise SystemExit(1)
+
+
+def _run_interactive() -> None:  # pragma: no cover — wrapper interactivo, sin lógica propia
     print("Modo del harness: [1] EJECUTOR  [2] PROFESOR")
     mode = "PROFESOR" if input("> ").strip() == "2" else "EJECUTOR"
     print("Describe tu proyecto:")
@@ -70,6 +118,16 @@ def main() -> None:  # pragma: no cover — wrapper interactivo, sin lógica pro
             print(f"  - {line}")
         if input("¿Reintentar? [s/N] > ").strip().lower() != "s":
             return
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = _parse_args(argv)
+
+    if args.text is not None:
+        _run_noninteractive(args.text, args.mode, args.output_dir or Path.cwd())
+        return
+
+    _run_interactive()
 
 
 if __name__ == "__main__":
