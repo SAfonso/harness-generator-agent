@@ -1,5 +1,7 @@
 # ONBOARDING — harness-generator-agent
 
+> 🇬🇧 English version: [`ONBOARDING.en.md`](ONBOARDING.en.md)
+
 > Esto es un tour guiado del proyecto, pensado para alguien que se une hoy y
 > no ha visto el código nunca. No sustituye a los specs (`SPEC.md`,
 > `specs/*.md`) — cuando vayas a tocar código, esos son el contrato real y
