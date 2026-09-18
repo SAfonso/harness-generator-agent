@@ -24,3 +24,9 @@
   la resolución rastree la intención de cada lado (commit, PR o tarea de
   origen) y conserve ambos cambios donde sean compatibles — nunca acepta una
   resolución hecha con `--ours`/`--theirs` o borrando bloques sin más
+- Cubre deliberadamente solo el **eje Spec**: ¿el output cumple los criterios
+  de aceptación de arriba? Nunca evalúa convenciones de código, legibilidad o
+  code smells — eso es el **eje Standards**, fuera de su alcance por diseño
+- Antes de que NOTARIO cierre el PR, recomienda correr `/code-review` como
+  chequeo del eje Standards — FISCAL no lo sustituye ni lo bloquea si no
+  está instalada

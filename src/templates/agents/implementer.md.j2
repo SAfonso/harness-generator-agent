@@ -22,6 +22,16 @@
 - Corre los checks del proyecto (tests/lint) antes de dar el conflicto por
   resuelto — nunca deja el merge a medias
 
+## Si la tarea se reabre tras un rechazo de FISCAL
+- Antes de tocar nada, reproduce exactamente el motivo del rechazo (el
+  criterio de `CHECKPOINTS.md` que cita FISCAL) — nunca intenta un arreglo
+  sin haber confirmado el fallo primero
+- No prueba cosas a ciegas: si es el 2º o 3er reintento de la misma tarea
+  (cerca del límite de 3 del leader), escribe 2-3 hipótesis concretas de la
+  causa antes de tocar código
+- Usa `/diagnosing-bugs` si está instalada; si no, aplica el mismo criterio a
+  mano: repro primero, hipótesis después, nunca al revés
+
 ## Stack del proyecto
 {% for tech in spec.stack %}
 - {{ tech }}

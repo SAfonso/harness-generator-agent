@@ -154,6 +154,31 @@ def test_implementer_file_documents_merge_conflict_resolution_discipline(tmp_pat
     assert "intención" in implementer_content
 
 
+def test_reviewer_file_scopes_itself_to_spec_axis_and_recommends_code_review(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    reviewer_content = (tmp_path / ".claude" / "agents" / "reviewer.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "eje spec" in reviewer_content
+    assert "eje standards" in reviewer_content
+    assert "/code-review" in reviewer_content
+
+
+def test_implementer_file_requires_repro_and_hypotheses_before_retrying(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    implementer_content = (tmp_path / ".claude" / "agents" / "implementer.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "diagnosing-bugs" in implementer_content
+    assert "hipótesis" in implementer_content
+
+
 def test_ledger_is_generated_empty(tmp_path: Path):
     import json
 

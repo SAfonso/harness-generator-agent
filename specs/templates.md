@@ -99,3 +99,21 @@ se reimplementa su lógica dentro de las plantillas.
   documentar el trade-off si son incompatibles, y correr los checks del
   proyecto antes de dar el conflicto por resuelto — nunca deja el merge a
   medias.
+
+## v2 — eje Standards vs eje Spec, y disciplina de repro en reintentos
+
+Dos integraciones más por referencia (aihero.dev), mismo patrón que las
+anteriores: delegar en una skill dedicada, no reimplementar su lógica.
+
+- `reviewer.md.j2` (FISCAL) documenta explícitamente que cubre **solo el eje
+  Spec** (¿cumple `CHECKPOINTS.md`?) — nunca evalúa convenciones de código,
+  legibilidad o code smells, eso es el **eje Standards**, deliberadamente
+  fuera de su alcance (ya lo era: "no rechaza por estilo o preferencia"). Antes
+  de que NOTARIO cierre el PR, recomienda correr `/code-review` para cubrir
+  ese eje — FISCAL no lo sustituye, ni lo bloquea si no está instalada.
+- `implementer.md.j2` (BISTURÍ) — al reabrirse una tarea tras un rechazo de
+  FISCAL, exige reproducir el motivo exacto del rechazo antes de tocar nada,
+  y si es el 2º o 3er reintento (cerca del límite de 3 del leader), escribir
+  2-3 hipótesis concretas de la causa antes de arreglar nada — nunca probar
+  a ciegas. Recomienda `/diagnosing-bugs` si está instalada; si no, aplica el
+  mismo criterio a mano: repro primero, hipótesis después, nunca al revés.

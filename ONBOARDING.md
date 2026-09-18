@@ -269,6 +269,16 @@ instalada). Integración por referencia, mismo patrón que la recomendación de
 `/code-review` en `inspect_project` (§3.4): delegar a una skill dedicada, no
 reinventarla.
 
+**FISCAL cubre deliberadamente solo el "eje Spec"** (¿cumple
+`CHECKPOINTS.md`?) — nunca convenciones de código ni code smells, eso es el
+"eje Standards", fuera de su alcance por diseño. Antes de que NOTARIO cierre
+el PR, recomienda correr `/code-review` para ese eje. Y **si una tarea se
+reabre tras un rechazo**, BISTURÍ no prueba a ciegas: reproduce el motivo
+exacto del rechazo antes de tocar nada, y a partir del 2º reintento escribe
+hipótesis concretas antes de arreglar — usa `/diagnosing-bugs` si está
+instalada, o el mismo criterio a mano si no. Dos integraciones más por
+referencia, mismo patrón.
+
 ### 4.3 Los ficheros clave que vas a mirar como junior
 
 - **`CLAUDE.md`** — léelo siempre primero al entrar a un proyecto con este
