@@ -62,8 +62,17 @@ subproceso.**
 4. Si el proyecto ya es uno empezado, el propio pipeline lo detecta e
    inspecciona antes de completar el paso 1 — infiere lo que puede con
    evidencia y audita problemas mecánicos (sin repo/remoto git, sin CI, sin
-   tests, documentación vacía, un `CLAUDE.md` que fusionar a mano), que
-   entran como tareas iniciales del backlog generado (ver
-   `specs/tools.md#inspect_project`).
+   tests, documentación vacía, un `CLAUDE.md` existente), que entran como
+   tareas iniciales del backlog generado (ver `specs/tools.md#inspect_project`).
 
-El harness resultante queda en `harness/` dentro del proyecto.
+Si el validator aprueba, el harness se aplica **directamente en la raíz del
+proyecto** — `.claude/agents/`, `AGENTS.md`, `CHECKPOINTS.md`,
+`feature_list.json`, `init.sh`, `progress/` — sin copiar ni mover nada a
+mano. Solo `CLAUDE.md` se protege: si ya existe uno, el generado queda como
+`CLAUDE.harness.md` junto al tuyo en vez de sobrescribirlo
+(`specs/tools.md#apply_harness`) — dile al usuario que lo fusione a mano
+cuando pase esto. Nota: no está verificado si Claude Code necesita una
+sesión nueva para detectar agentes recién escritos en `.claude/agents/` —
+si el usuario pide usar un agente del harness (ej. "arranca con el leader")
+y no aparece disponible, sugiérele reabrir la sesión antes de asumir que
+algo falló.

@@ -72,7 +72,11 @@ Dos vías, mismo código (`src/`), ver `specs/packaging.md`:
 2. Describe tu proyecto cubriendo las 7 dimensiones: tipo, stack, fuentes de
    datos, restricciones, criterios de done, entregable y tiempo disponible.
 3. Si falta información, el intake te pide las dimensiones que faltan.
-4. El harness aprobado queda en `harness/` — cópialo a la raíz de tu proyecto.
+4. El harness aprobado se aplica **directamente en la raíz de tu proyecto**
+   (`.claude/agents/`, `AGENTS.md`, `CHECKPOINTS.md`, `feature_list.json`,
+   `init.sh`, `progress/`) — nada que copiar ni mover a mano. Se genera
+   primero en aislado (`harness/`) para que el validator lo revise, y solo
+   si aprueba se mueve a la raíz y se borra ese directorio temporal.
 
 **Proyecto ya empezado (brownfield):** antes de preguntar, el pipeline
 inspecciona el directorio destino (`inspect_project`, ver `specs/tools.md`) —
@@ -83,14 +87,16 @@ la entrevista completa.
 
 Además **audita** problemas mecánicos que romperían el harness generado (sin
 repo/remoto git, sin CI, sin tests, documentación vacía, o un `CLAUDE.md`
-existente que habría que fusionar a mano) y, cuando hay código, recomienda
-pasar `/code-review`/`/security-review` (eso sí requiere razonamiento, no lo
-hace `inspect_project`). Cada hallazgo entra como tarea inicial en
-`feature_list.json` con su arreglo propuesto — nunca se queda solo en
-comentario. El `README.md` del proyecto nunca se toca ni se genera — es
-documentación de producto del usuario, no del harness. Fusionar el `CLAUDE.md`/
-`feature_list.json` generados con los que ya existan en el proyecto sigue
-siendo manual.
+existente) y, cuando hay código, recomienda pasar `/code-review`/`/security-review`
+(eso sí requiere razonamiento, no lo hace `inspect_project`). Cada hallazgo
+entra como tarea inicial en `feature_list.json` con su arreglo propuesto —
+nunca se queda solo en comentario. El `README.md` del proyecto nunca se toca
+ni se genera — es documentación de producto del usuario, no del harness.
+
+**`CLAUDE.md` es el único fichero que se protege de una sobrescritura**: si
+ya tienes uno, el generado se deja como `CLAUDE.harness.md` junto al tuyo en
+vez de sustituirlo — fusionarlos sigue siendo manual (tarea en el backlog).
+Todo lo demás se aplica sin preguntar, porque prácticamente nunca preexiste.
 
 ## Desarrollo
 

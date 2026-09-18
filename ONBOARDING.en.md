@@ -207,10 +207,12 @@ before asking anything, `run_pipeline` calls `inspect_project()`:
 This is what you'll actually use day to day once it's generated. It lives
 inside **your** project (not this repo) and Claude Code runs it directly —
 there's no Python engine orchestrating it; the `.claude/agents/*.md` files
-are instructions Claude Code follows to the letter.
+are instructions Claude Code follows to the letter. This is your project's
+root **after** the automatic application step (§6) — not a `harness/`
+subfolder you have to move yourself:
 
 ```
-harness/
+your-project/  (the root — not a subfolder)
 ├── CLAUDE.md              # the first thing Claude Code reads: mode, rules, model policy
 ├── AGENTS.md              # map of every role and its mode
 ├── CHECKPOINTS.md         # acceptance criteria (what FISCAL reviews against)
@@ -341,10 +343,19 @@ Full detail in `README.md`; here's just the mental map:
    documented in `errors/packaging.md` — worth reading, it's a good example
    of how the repo's error protocol works).
 3. You choose a mode (`EJECUTOR` — "executor" — or `PROFESOR`), describe the
-   project (or let the brownfield inspection fill in what it can), and the
-   approved harness ends up in `harness/` inside your project.
-4. Moving `harness/*` to your project's root and merging `CLAUDE.md` with an
-   existing one (if there was one) is still manual — not automated.
+   project (or let the brownfield inspection fill in what it can), and if it
+   gets approved, the harness gets applied **directly to your project's
+   root** — nothing to move or copy by hand. Internally it's first generated
+   into `harness/` (isolated, so the validator can review it) and
+   `apply_harness()` moves it to the root and deletes that staging directory
+   only once approved (`specs/tools.md#apply_harness`) — if it's rejected,
+   it stays in `harness/` unapplied, so the report can still be inspected.
+4. Only `CLAUDE.md` is protected from being overwritten: if you already had
+   one, the generated one ends up as `CLAUDE.harness.md` next to yours —
+   merging them is still manual (there's a backlog task for it,
+   `existing_claude_md`). Everything else (`.claude/agents/`, `AGENTS.md`,
+   `CHECKPOINTS.md`, `feature_list.json`, `init.sh`, `progress/`) gets
+   applied without asking, because it practically never pre-exists.
 
 **If you invoke it from inside Claude Code** (via `/harness-agents`, not by
 typing it yourself in a terminal), bare `harness-agents` **doesn't work**:
@@ -424,6 +435,11 @@ A real project has documented technical debt, not hidden debt:
 - **`progress/current.md`, `history.md`, `errors.md`** show up mentioned in
   older rules/specs as part of what should get generated, but today only
   `progress/ledger.json` actually gets generated.
+- **Running the generator twice on the same project silently overwrites**
+  `feature_list.json`, `progress/ledger.json`, and `.claude/agents/*.md` —
+  `apply_harness()` (`specs/tools.md`) only protects `CLAUDE.md` from being
+  overwritten. Idempotent re-runs on a project that already has the harness
+  applied aren't handled.
 
 If you're looking for a first task to learn this repo's SDD+TDD flow with
 low risk, cleaning up any of these (spec → test → implementation → commit)
