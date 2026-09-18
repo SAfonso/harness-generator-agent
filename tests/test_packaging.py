@@ -36,5 +36,15 @@ def test_skill_file_uses_the_installed_entry_point_not_the_raw_module():
     assert "pip install -e" in content
     # el comando de arranque real es el entry point instalado, no el módulo
     # en crudo (bug real documentado en errors/packaging.md)
-    assert "```bash\nharness-agents\n```" in content
+    assert "harness-agents --text" in content
     assert "```bash\npython3 -m src.main\n```" not in content
+
+
+def test_skill_file_never_invokes_harness_agents_without_text_flag():
+    skill_path = REPO_ROOT / "skill" / "harness-agents" / "SKILL.md"
+    content = skill_path.read_text(encoding="utf-8")
+
+    # bug real (errors/main.md): sin --text, harness-agents usa input() y
+    # revienta con EOFError al invocarse desde el tool de Bash de un agente
+    assert "```bash\nharness-agents\n```" not in content
+    assert "EOFError" in content or "eoferror" in content.lower()

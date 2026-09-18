@@ -32,19 +32,38 @@ vez de en el proyecto del usuario — justo lo que rompe el caso de uso
 brownfield. El entry point instalado no tiene ese problema: funciona desde
 cualquier directorio.
 
-## Arranque
+## Arranque — nunca invoques `harness-agents` a secas
 
-Con el `cwd` ya en la raíz del proyecto del usuario (nunca en el repo del
-generador):
+`harness-agents` sin `--text` es un menú interactivo con `input()`. Eso
+funciona si un humano lo teclea en su propia terminal, pero **revienta con
+`EOFError`** en cuanto lo ejecuta el tool de Bash de un agente: un
+subproceso lanzado por Bash no sostiene una conversación de stdin turno a
+turno, así que el primer `input()` encuentra el flujo ya cerrado. Esta skill
+existe precisamente para evitarlo: **Claude es la capa conversacional, no el
+subproceso.**
 
-```bash
-harness-agents
-```
+1. Pregunta al usuario en el propio chat lo que describe su proyecto (tipo,
+   stack, fuentes de datos, restricciones, criterios de aceptación,
+   entregable, tiempo disponible) — o, si el proyecto ya existe, deja que la
+   inspección brownfield del paso 2 rellene lo que pueda inferir y pregunta
+   solo el resto.
+2. Con el `cwd` ya en la raíz del proyecto del usuario (nunca en el repo del
+   generador), ejecuta:
+   ```bash
+   harness-agents --text "<descripción reunida en el chat>" --mode EJECUTOR --output-dir "$(pwd)"
+   ```
+   (`--mode PROFESOR` en vez de `EJECUTOR` si el usuario quiere que le reten
+   las decisiones poco pensadas — ver `specs/intake_agent.md`.)
+3. Si el comando termina con código de salida distinto de cero y la salida
+   incluye "Falta información sobre estas dimensiones", pregunta al usuario
+   por cada una en el chat, amplía el `--text` con las respuestas, y vuelve
+   a ejecutar el mismo comando — es una invocación nueva, no una
+   continuación de la anterior.
+4. Si el proyecto ya es uno empezado, el propio pipeline lo detecta e
+   inspecciona antes de completar el paso 1 — infiere lo que puede con
+   evidencia y audita problemas mecánicos (sin repo/remoto git, sin CI, sin
+   tests, documentación vacía, un `CLAUDE.md` que fusionar a mano), que
+   entran como tareas iniciales del backlog generado (ver
+   `specs/tools.md#inspect_project`).
 
-El menú interactivo pide elegir modo (`EJECUTOR`/`PROFESOR`) y describir el
-proyecto. Si el directorio ya es un proyecto empezado, el propio pipeline lo
-detecta e inspecciona antes de preguntar — infiere lo que puede con evidencia
-y audita problemas mecánicos (sin repo/remoto git, sin CI, sin tests,
-documentación vacía), que entran como tareas iniciales del backlog generado
-(ver `specs/tools.md#inspect_project`). El harness resultante queda en
-`harness/` dentro del proyecto.
+El harness resultante queda en `harness/` dentro del proyecto.

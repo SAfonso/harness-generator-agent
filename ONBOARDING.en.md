@@ -346,6 +346,17 @@ Full detail in `README.md`; here's just the mental map:
 4. Moving `harness/*` to your project's root and merging `CLAUDE.md` with an
    existing one (if there was one) is still manual — not automated.
 
+**If you invoke it from inside Claude Code** (via `/harness-agents`, not by
+typing it yourself in a terminal), bare `harness-agents` **doesn't work**:
+it uses `input()`, and an agent's Bash tool doesn't sustain a turn-by-turn
+stdin conversation — it blows up with `EOFError` on the first prompt
+(another real bug, this one found in production against a real project,
+see `errors/main.md`). That's why `main()` accepts `--text`: the skill has
+Claude ask in the chat itself, build
+`harness-agents --text "..." --mode ... --output-dir "$(pwd)"`, and re-invoke
+with expanded text if the output asks for more information — Claude is the
+conversational layer, never the subprocess.
+
 ---
 
 ## 7. How this repo is organized (if you're going to touch code)

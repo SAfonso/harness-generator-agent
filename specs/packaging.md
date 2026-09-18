@@ -55,8 +55,19 @@ Dos canales, una sola fuente de verdad (`src/`):
      el repo clonado del generador (`pip install -e <ruta-del-repo>`) — eso
      arrastra `pydantic`/`jinja2` como dependencias declaradas en
      `pyproject.toml`, sin instalarlas sueltas.
-  2. Ejecuta `harness-agents` (el entry point instalado) sin tocar `cwd` —
-     así `Path.cwd()` sigue siendo el proyecto del usuario.
+  2. **Nunca ejecuta `harness-agents` a secas.** Reúne la descripción del
+     proyecto preguntando al usuario en el propio chat (Claude es la capa
+     conversacional, no el subproceso — ver bug real en `errors/main.md`:
+     `harness-agents` sin `--text` usa `input()`, que revienta con
+     `EOFError` al invocarse desde el tool de Bash de un agente, que no
+     sostiene stdin turno a turno) y ejecuta
+     `harness-agents --text "<descripción>" --mode <EJECUTOR|PROFESOR>
+     --output-dir "$(pwd)"` sin tocar `cwd` — así `Path.cwd()` sigue siendo
+     el proyecto del usuario.
+  3. Si el comando termina con código de salida distinto de cero y la salida
+     incluye "Falta información sobre estas dimensiones", pregunta al
+     usuario por cada una en el chat, amplía `--text` con las respuestas, y
+     vuelve a invocar — es una llamada nueva, no una continuación (`specs/main.md#v2`).
 - Sí depende del paquete pip (canal 1) para funcionar — a diferencia del
   diseño original, la skill no reimplementa el arranque: instala y usa el
   mismo entry point que un usuario de pip tendría.
@@ -84,6 +95,10 @@ Dos canales, una sola fuente de verdad (`src/`):
     `harness-agents` como forma de arranque, e incluye `pip install -e` como
     instalación de respaldo — y **nunca** instruye `python3 -m src.main`
     como forma de arrancar (ver bug documentado en `errors/packaging.md`).
+  - El fichero incluye `--text` en su ejemplo de arranque, y **nunca**
+    presenta `harness-agents` a secas (sin `--text`) como forma de
+    invocarse desde la skill — ese uso revienta con `EOFError`
+    (`errors/main.md`).
 - No se testea la instalación real (`pip install -e .`) ni la ejecución de la
   skill dentro de Claude Code — eso es verificación manual, fuera del alcance
   de pytest.
