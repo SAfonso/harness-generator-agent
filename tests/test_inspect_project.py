@@ -190,3 +190,32 @@ def test_no_code_quality_finding_without_manifests(tmp_path):
 
     findings = _findings_by_check(result)
     assert "code_quality_review_pending" not in findings
+
+
+def test_existing_claude_md_flagged_for_manual_merge(tmp_path):
+    (tmp_path / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
+    (tmp_path / "CLAUDE.md").write_text(
+        "Convenciones propias del proyecto, ya establecidas y en uso.",
+        encoding="utf-8",
+    )
+
+    result = inspect_project(tmp_path)
+
+    findings = _findings_by_check(result)
+    assert findings["existing_claude_md"].severity == "warning"
+    assert "README" in findings["existing_claude_md"].suggested_fix
+    assert "empty_docs" not in findings
+
+
+def test_no_existing_claude_md_finding_when_claude_md_absent(tmp_path):
+    (tmp_path / "requirements.txt").write_text("fastapi\n", encoding="utf-8")
+    (tmp_path / "README.md").write_text(
+        "Este proyecto hace algo concreto y está documentado con detalle.",
+        encoding="utf-8",
+    )
+
+    result = inspect_project(tmp_path)
+
+    findings = _findings_by_check(result)
+    assert "existing_claude_md" not in findings
+    assert "empty_docs" not in findings

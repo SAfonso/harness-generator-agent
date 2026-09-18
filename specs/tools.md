@@ -173,6 +173,7 @@ produce un `AuditFinding` (`specs/models.md`):
 | `no_ci` | `warning` | No hay `.github/workflows/*`, `.gitlab-ci.yml` ni `.circleci/config.yml` | CENTINELA no puede verificar CI — hace merge solo si está en verde, y sin CI configurado no hay nada que verificar |
 | `no_tests` | `warning` | No hay directorio `tests/`/`test/`/`__tests__`/`spec/` ni ficheros `test_*`/`*_test.*`/`*.spec.*` | FISCAL(+QA) revisa contra criterios, pero sin tests existentes no hay red de seguridad previa |
 | `empty_docs` | `warning` | Ni `README.md` ni `CLAUDE.md` tienen contenido no trivial | El harness parte sin contexto documentado del proyecto |
+| `existing_claude_md` | `warning` | `CLAUDE.md` ya tiene contenido no trivial | `generator_agent` va a escribir un `harness/CLAUDE.md` nuevo desde cero — sin avisar, se perdería el existente al copiarlo a la raíz |
 | `code_quality_review_pending` | `warning` | Siempre que `is_existing_project` y hay manifiestos (hay código real) | Calidad/seguridad del código requiere razonamiento, no heurísticas — `inspect_project` nunca lo evalúa él mismo |
 
 - `no_ci` sube a evidencia de que **CENTINELA** (v2) no tiene nada que verificar
@@ -181,6 +182,13 @@ produce un `AuditFinding` (`specs/models.md`):
   "ejecutar `/code-review` (y `/security-review` si el proyecto maneja datos
   sensibles) sobre el código existente antes de seguir añadiendo funcionalidad"
   — `inspect_project` **delega**, nunca sustituye esa revisión.
+- `existing_claude_md` y `empty_docs` son mutuamente excluyentes por
+  construcción: el primero exige `CLAUDE.md` con contenido, el segundo exige
+  que ni `README.md` ni `CLAUDE.md` lo tengan. `existing_claude_md.suggested_fix`
+  siempre menciona también revisar el `README.md` si documenta el flujo de
+  trabajo — `inspect_project` **nunca** genera ni edita el `README.md` del
+  proyecto (es documentación de producto del usuario, no del harness); como
+  mucho lo menciona en el texto de este finding.
 - Cada `AuditFinding.suggested_fix` es lo bastante concreto para ser el título
   de una tarea de `feature_list.json` sin reescritura (ver `specs/generator_agent.md`).
 - Los checks de auditoría son heurísticas v2 (nombres de fichero/directorio,

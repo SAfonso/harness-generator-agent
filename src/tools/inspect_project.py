@@ -46,7 +46,8 @@ def inspect_project(path: Path) -> InspectionResult:
 
     manifests = _read_manifests(path)
     has_git_history = _has_git_history(path)
-    has_docs = _has_meaningful_content(path / "README.md") or _has_meaningful_content(path / "CLAUDE.md")
+    has_claude_md = _has_meaningful_content(path / "CLAUDE.md")
+    has_docs = _has_meaningful_content(path / "README.md") or has_claude_md
 
     if not (manifests or has_git_history or has_docs):
         return InspectionResult(is_existing_project=False, fields={}, summary="")
@@ -61,7 +62,7 @@ def inspect_project(path: Path) -> InspectionResult:
     if stack_field is not None:
         fields["stack"] = stack_field
 
-    findings = _audit_project(path, manifests, has_git_history, has_docs)
+    findings = _audit_project(path, manifests, has_git_history, has_docs, has_claude_md)
 
     summary = _build_summary(path, manifests, has_git_history, has_docs, fields, findings)
 
@@ -179,7 +180,11 @@ def _has_ci(path: Path) -> bool:
 
 
 def _audit_project(
-    path: Path, manifests: dict[str, str], has_git_history: bool, has_docs: bool,
+    path: Path,
+    manifests: dict[str, str],
+    has_git_history: bool,
+    has_docs: bool,
+    has_claude_md: bool,
 ) -> list[AuditFinding]:
     findings: list[AuditFinding] = []
 
@@ -225,6 +230,16 @@ def _audit_project(
             description="Ni README.md ni CLAUDE.md tienen contenido documentado.",
             suggested_fix="Documentar el proyecto (README.md o CLAUDE.md) para que "
                            "el harness parta con contexto real, no de cero.",
+        ))
+    elif has_claude_md:
+        findings.append(AuditFinding(
+            check="existing_claude_md",
+            severity="warning",
+            description="Ya existe un CLAUDE.md con contenido en este proyecto.",
+            suggested_fix="Revisar y fusionar a mano tu CLAUDE.md con el "
+                           "harness/CLAUDE.md generado antes de sustituirlo — "
+                           "revisa también tu README si documenta el flujo de "
+                           "trabajo, el generador no lo toca ni lo genera.",
         ))
 
     if manifests:
