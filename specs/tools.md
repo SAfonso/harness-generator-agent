@@ -1,6 +1,6 @@
 # SPEC — módulo `tools`
 
-> Código: `src/tools/` · Tests: `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py`, `tests/test_inspect_project.py`
+> Código: `src/tools/` · Tests: `tests/test_assess_input.py`, `tests/test_classify_project.py`, `tests/test_render_template.py`, `tests/test_validate_harness.py`, `tests/test_inspect_project.py`, `tests/test_apply_harness.py`
 > Errores conocidos: `errors/tools.md` · Reglas transversales: `SPEC.md`
 
 ## Responsabilidad
@@ -195,6 +195,54 @@ produce un `AuditFinding` (`specs/models.md`):
   `git remote`) — igual que `assess_input`/`classify_project`, no cubren todos
   los stacks ni convenciones posibles. Ampliar la lista de patrones es un
   cambio de spec, no de código suelto.
+
+---
+
+## `apply_harness` (v2)
+
+**Fichero:** `src/tools/apply_harness.py`
+
+**Firma:**
+```python
+apply_harness(harness_path: Path, output_dir: Path) -> list[str]
+```
+
+**Responsabilidad:** mover el contenido ya generado y **aprobado** por
+`validator_agent` desde el directorio de staging (`output_dir / "harness"`)
+directamente a la raíz del proyecto destino (`output_dir`), para que el
+usuario no tenga que copiar/mover nada a mano. Solo se llama tras
+`verdict.approved` — nunca sobre un harness rechazado (ese se deja en
+`harness_path` tal cual, para que el informe del validator siga siendo
+inspeccionable).
+
+**Contrato:**
+- `CLAUDE.md` es el **único** fichero que puede colisionar de verdad con
+  algo que el usuario ya tenga (brownfield):
+  - Si `output_dir / "CLAUDE.md"` no existe → se mueve tal cual, como
+    `CLAUDE.md`.
+  - Si ya existe → el generado se deja como `output_dir / "CLAUDE.harness.md"`
+    en vez de sobrescribir — nunca se pierde contenido existente en
+    silencio. (Coherente con el finding `existing_claude_md` de
+    `inspect_project`, que ya avisa de esto en el backlog.)
+- El resto de ficheros/directorios (`AGENTS.md`, `CHECKPOINTS.md`,
+  `feature_list.json`, `init.sh`, `progress/`, `.claude/`) se **fusionan**
+  con lo que ya haya en `output_dir` — si `output_dir/.claude/` ya existe
+  (settings propios, por ejemplo), los agentes nuevos se añaden dentro sin
+  anidar ni sobrescribir ficheros con otro nombre. Se asume que estos
+  nombres no preexisten con contenido real que proteger — no llevan la
+  misma cautela que `CLAUDE.md`.
+- Al terminar, `harness_path` (el directorio de staging) se elimina —no
+  queda una carpeta `harness/` residual junto a lo ya aplicado.
+- Devuelve la lista de rutas absolutas finales de todo lo aplicado (para que
+  `PipelineResult.generated_files` refleje dónde quedó cada cosa, no las
+  rutas de staging ya borradas).
+
+**Límite conocido, no resuelto:** si se ejecuta el generador dos veces sobre
+el mismo `output_dir` (un harness ya aplicado antes), la segunda pasada
+sobrescribe `feature_list.json`/`progress/ledger.json`/`.claude/agents/*.md`
+sin avisar — solo `CLAUDE.md` está protegido. Re-ejecuciones idempotentes
+sobre un proyecto que ya tiene el harness aplicado quedan fuera de alcance
+de esta tarea.
 
 ---
 

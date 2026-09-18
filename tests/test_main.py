@@ -25,8 +25,9 @@ def test_rich_input_ends_approved_with_generated_harness(tmp_path):
 
     assert isinstance(result, PipelineResult)
     assert result.status == "approved"
-    assert result.harness_path == tmp_path / "harness"
+    assert result.harness_path == tmp_path
     assert (result.harness_path / "CLAUDE.md").is_file()
+    assert not (tmp_path / "harness").exists()
     assert result.validator is not None
     assert result.validator.approved is True
     assert len(result.generated_files) > 0
@@ -59,7 +60,19 @@ def test_brownfield_output_dir_lets_intake_infer_project_type(tmp_path):
     result = run_pipeline(text, mode="EJECUTOR", output_dir=tmp_path)
 
     assert result.status == "approved"
-    assert result.harness_path == tmp_path / "harness"
+    assert result.harness_path == tmp_path
+
+
+def test_existing_claude_md_is_preserved_and_generated_one_is_kept_alongside(tmp_path):
+    (tmp_path / "CLAUDE.md").write_text("# CLAUDE del usuario, no tocar", encoding="utf-8")
+
+    result = run_pipeline(RICH_PIPELINE_TEXT, mode="EJECUTOR", output_dir=tmp_path)
+
+    assert result.status == "approved"
+    assert (tmp_path / "CLAUDE.md").read_text(encoding="utf-8") == "# CLAUDE del usuario, no tocar"
+    assert (tmp_path / "CLAUDE.harness.md").is_file()
+    assert (tmp_path / "AGENTS.md").is_file()
+    assert not (tmp_path / "harness").exists()
 
 
 def test_broken_generation_is_rejected_with_informe(tmp_path, monkeypatch):
@@ -93,13 +106,14 @@ def test_main_with_text_flag_runs_noninteractively_and_approves(tmp_path, capsys
 
     captured = capsys.readouterr()
     assert "aprobado" in captured.out.lower()
-    assert (tmp_path / "harness" / "CLAUDE.md").is_file()
+    assert (tmp_path / "CLAUDE.md").is_file()
+    assert not (tmp_path / "harness").exists()
 
 
 def test_main_with_text_flag_defaults_to_ejecutor_mode(tmp_path):
     main(["--text", RICH_PIPELINE_TEXT, "--output-dir", str(tmp_path)])
 
-    assert (tmp_path / "harness" / "CLAUDE.md").is_file()
+    assert (tmp_path / "CLAUDE.md").is_file()
 
 
 def test_main_with_text_flag_exits_nonzero_on_needs_input(tmp_path, capsys):

@@ -15,6 +15,7 @@ from src.agents.analysis_agent import run_analysis
 from src.agents.generator_agent import run_generator
 from src.agents.intake_agent import run_intake
 from src.agents.validator_agent import ValidatorResult, run_validator
+from src.tools.apply_harness import apply_harness
 from src.tools.inspect_project import inspect_project
 
 
@@ -37,10 +38,20 @@ def run_pipeline(text: str, mode: str, output_dir: Path) -> PipelineResult:
     generated = run_generator(spec, harness_path)
     verdict = run_validator(harness_path, spec)
 
+    if not verdict.approved:
+        return PipelineResult(
+            status="rejected",
+            harness_path=harness_path,
+            generated_files=generated,
+            validator=verdict,
+        )
+
+    applied = apply_harness(harness_path, output_dir)
+
     return PipelineResult(
-        status="approved" if verdict.approved else "rejected",
-        harness_path=harness_path,
-        generated_files=generated,
+        status="approved",
+        harness_path=output_dir,
+        generated_files=applied,
         validator=verdict,
     )
 

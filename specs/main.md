@@ -38,10 +38,19 @@ run_pipeline(text: str, mode: str, output_dir: Path) -> PipelineResult
 class PipelineResult(BaseModel):
     status: Literal["needs_input", "approved", "rejected"]
     questions: list[str]            # solo si needs_input
-    harness_path: Path | None       # output_dir / "harness" si se llegó a generar
-    generated_files: list[str]      # ficheros escritos por generator
+    harness_path: Path | None       # ver semántica por status más abajo (v2)
+    generated_files: list[str]      # rutas finales de lo aplicado (approved) o de staging (rejected)
     validator: ValidatorResult | None  # veredicto FISCAL si se llegó a validar
 ```
+
+**Semántica de `harness_path` por `status` (v2 — ver `apply_harness` más abajo):**
+- `needs_input` → `None` (no se generó nada).
+- `approved` → `output_dir` — el harness ya está aplicado en la raíz del
+  proyecto, no en una subcarpeta. `generated_files` lista las rutas finales
+  (post-aplicación), no las de staging.
+- `rejected` → `output_dir / "harness"` — el harness rechazado se deja tal
+  cual en staging, sin aplicar, para que el informe del validator siga
+  siendo inspeccionable junto a los ficheros que lo motivaron.
 
 ## Flujo
 
@@ -58,18 +67,25 @@ class PipelineResult(BaseModel):
      (main() las muestra, amplía el input y relanza; la `inspection` ya
      calculada se reutiliza, no se recalcula en el reintento)
 5. run_pipeline(): run_analysis(spec parcial) → spec completa
-6. run_pipeline(): run_generator(spec, output_dir / "harness")
+6. run_pipeline(): run_generator(spec, output_dir / "harness")  — siempre en staging
 7. run_pipeline(): run_validator(harness_path, spec)
-8. Si validator aprueba → status="approved"; main() muestra resumen y ruta
-9. Si validator rechaza → status="rejected"; main() muestra el informe
-   y pregunta si reintentar
+8. Si validator rechaza → status="rejected"; harness_path queda en staging
+   sin tocar; main() muestra el informe y pregunta si reintentar
+9. Si validator aprueba → run_pipeline(): apply_harness(harness_path, output_dir)
+   (v2, `specs/tools.md#apply_harness`) mueve todo a la raíz del proyecto y
+   borra el staging; status="approved"; main() muestra resumen y la ruta
+   (`output_dir`, no una subcarpeta)
 ```
 
 ## Restricciones
 
 - `run_pipeline()` no imprime ni lee de consola — toda la interacción vive en `main()`.
 - Si el intake devuelve `needs_input`, **no** se crea ningún directorio ni fichero.
-- El harness se genera siempre en `output_dir / "harness"`.
+- El harness se genera **siempre** en `output_dir / "harness"` como paso
+  intermedio (para que `validator_agent` valide en aislado, ver
+  `errors/tools.md`) — pero si se aprueba, **no se queda ahí**: `apply_harness`
+  lo mueve a la raíz de `output_dir` en el mismo `run_pipeline()`, sin que el
+  usuario tenga que moverlo a mano.
 - El flujo completo debe terminar en menos de 2 minutos para un input rico
   (criterio de aceptación 4 del proyecto).
 
