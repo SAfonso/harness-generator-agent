@@ -46,7 +46,7 @@ SISTEMA A — "El Generador"                SISTEMA B — "El Harness Generado"
 ```
 
 Si en algún momento lees "FISCAL" y no sabes si se refiere al Sistema A o al
-B: hay una sección más abajo (§6) dedicada exactamente a esa trampa.
+B: hay una sección más abajo (§5) dedicada exactamente a esa trampa.
 
 ---
 
@@ -364,7 +364,12 @@ ningún error se investiga dos veces.
 
 **Tests:** `python3 -m pytest tests/ -q` antes de cada commit. Usa el
 fixture `tmp_path` de pytest para todo lo que toque el filesystem —
-nunca crees ficheros de prueba a mano en el repo.
+nunca crees ficheros de prueba a mano en el repo. Dos reglas de calidad
+explícitas en `SPEC.md`: `monkeypatch`/mocks solo en fronteras externas
+reales (filesystem, rutas/config), nunca para simular la lógica de otra
+función propia; y ningún test tautológico (el valor esperado tiene que ser
+un literal trazable al spec, no el resultado de recalcular con la misma
+fórmula que el código bajo test).
 
 ---
 
