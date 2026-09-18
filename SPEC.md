@@ -135,6 +135,13 @@ DIRECTOR:
   (no crear ficheros en el repo ni en `/tmp` a mano)
 - Para sobreescribir variables a nivel de módulo (ej: `TEMPLATES_DIR`) usar `monkeypatch`
   de pytest en lugar de modificar la función original
+- `monkeypatch`/mocks solo en fronteras externas reales (filesystem vía `tmp_path`,
+  variables de módulo que apuntan a rutas o config) — nunca para simular la
+  lógica de otra función propia del mismo módulo o de otro módulo interno
+- Ningún test tautológico: el valor esperado es un literal trazable al spec del
+  módulo, nunca el resultado de recalcular con la misma fórmula/heurística que
+  usa el código bajo test — si el test y la implementación comparten lógica,
+  el test no detecta nada
 
 ---
 
