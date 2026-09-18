@@ -20,3 +20,7 @@
 - Si CENTINELA reabre el ciclo tras un fallo de CI/merge, trata el
   `failure_context` que adjunta como un rechazo más (cuenta contra el límite
   de 3 del leader) — no es una tarea nueva, es la misma tarea sin cerrar
+- Si ese `failure_context` es un **conflicto de merge**, el rechazo exige que
+  la resolución rastree la intención de cada lado (commit, PR o tarea de
+  origen) y conserve ambos cambios donde sean compatibles — nunca acepta una
+  resolución hecha con `--ours`/`--theirs` o borrando bloques sin más

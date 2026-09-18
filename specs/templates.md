@@ -76,3 +76,26 @@ src/templates/
   proyecto, igual que implementer/reviewer (ver `specs/generator_agent.md` y
   `config.py#_CORE_AGENTS`)
 - Ver el flujo completo de ejecución en `SPEC.md#flujo-de-ejecución-del-harness-generado`
+
+## v2 — disciplina de resolución de conflictos de merge
+
+Integración por referencia de la skill externa `/resolving-merge-conflicts`
+(aihero.dev) — mismo patrón que `code_quality_review_pending` en
+`inspect_project` (`specs/tools.md`): se delega a una skill dedicada, nunca
+se reimplementa su lógica dentro de las plantillas.
+
+- `watchman.md.j2` (CENTINELA) distingue explícitamente, en el
+  `failure_context` que entrega a FISCAL, un **conflicto de merge** de un
+  **fallo de CI genérico** — nunca los mezcla — y recomienda invocar
+  `/resolving-merge-conflicts` si está instalada.
+- `reviewer.md.j2` (FISCAL) exige esa disciplina como condición del rechazo
+  cuando el `failure_context` es un conflicto: la resolución debe rastrear la
+  intención de cada lado (commit, PR o tarea de origen) y conservar ambos
+  cambios donde sean compatibles — nunca acepta una resolución hecha con
+  `--ours`/`--theirs` o borrando bloques sin más.
+- `implementer.md.j2` (BISTURÍ) — quien de verdad toca el fichero en conflicto
+  al reabrirse la tarea — documenta el mismo criterio como fallback manual si
+  la skill no está instalada: rastrear intención, conservar lo compatible,
+  documentar el trade-off si son incompatibles, y correr los checks del
+  proyecto antes de dar el conflicto por resuelto — nunca deja el merge a
+  medias.

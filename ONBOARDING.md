@@ -259,6 +259,16 @@ CENTINELA (CI + merge)
 Al cerrar la tarea (integrada o escalada), se añade un resumen destilado a
 `progress/ledger.json` — nunca el log crudo de la conversación.
 
+**Si el fallo de CENTINELA es un conflicto de merge** (no CI en rojo), se
+trata distinto de un fallo de CI genérico: CENTINELA lo marca explícitamente
+como tal, FISCAL exige que la resolución rastree la intención de cada lado
+(commit, PR o tarea de origen) en vez de aceptar `--ours`/`--theirs` a lo
+bruto, y BISTURÍ —quien de verdad toca el fichero al reabrirse la tarea—
+aplica ese criterio (o usa la skill `/resolving-merge-conflicts` si está
+instalada). Integración por referencia, mismo patrón que la recomendación de
+`/code-review` en `inspect_project` (§3.4): delegar a una skill dedicada, no
+reinventarla.
+
 ### 4.3 Los ficheros clave que vas a mirar como junior
 
 - **`CLAUDE.md`** — léelo siempre primero al entrar a un proyecto con este

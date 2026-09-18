@@ -14,5 +14,9 @@
   (log de CI relevante o fichero en conflicto) y lo entrega a FISCAL para
   reabrir el ciclo de revisión — nunca al implementer directamente, nunca
   reintenta a ciegas ni repite la tarea desde cero
+- Si el fallo es un **conflicto de merge** (no CI en rojo), lo marca
+  explícitamente como tal en el `failure_context` — nunca lo mezcla con un
+  fallo de CI genérico — y recomienda invocar `/resolving-merge-conflicts`
+  si está instalada para resolverlo con criterio, no a lo bruto
 - Un fallo de CENTINELA cuenta como un rechazo más dentro del límite de 3 del leader
 - No aprueba una integración a medias: o pushed + merged + CI verde, o rechazo explícito

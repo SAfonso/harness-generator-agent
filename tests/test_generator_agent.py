@@ -117,6 +117,43 @@ def test_reviewer_file_documents_centinela_reopen(tmp_path: Path):
     assert "failure_context" in reviewer_content
 
 
+def test_watchman_file_distinguishes_conflict_from_generic_ci_failure(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    watchman_content = (tmp_path / ".claude" / "agents" / "watchman.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "conflicto de merge" in watchman_content
+    assert "resolving-merge-conflicts" in watchman_content
+
+
+def test_reviewer_file_requires_intent_tracing_for_merge_conflicts(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    reviewer_content = (tmp_path / ".claude" / "agents" / "reviewer.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "conflicto de merge" in reviewer_content
+    assert "intención" in reviewer_content
+    assert "--ours" in reviewer_content
+
+
+def test_implementer_file_documents_merge_conflict_resolution_discipline(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    implementer_content = (tmp_path / ".claude" / "agents" / "implementer.md").read_text(
+        encoding="utf-8"
+    ).lower()
+    assert "resolving-merge-conflicts" in implementer_content
+    assert "intención" in implementer_content
+
+
 def test_ledger_is_generated_empty(tmp_path: Path):
     import json
 

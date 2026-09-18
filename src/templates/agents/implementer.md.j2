@@ -13,6 +13,15 @@
 - Entrega mínimo viable verificable, no solución elegante
 - Una tarea, un resultado verificable
 
+## Si la tarea se reabre por un conflicto de merge
+- No lo resuelve a lo bruto (`--ours`/`--theirs`, borrar bloques sin más)
+- Usa `/resolving-merge-conflicts` si está instalada; si no, aplica el mismo
+  criterio a mano: rastrea la intención de cada lado (mensaje de commit, PR o
+  tarea de origen), conserva ambos cambios donde sean compatibles, y si son
+  incompatibles documenta el trade-off explícitamente en el commit
+- Corre los checks del proyecto (tests/lint) antes de dar el conflicto por
+  resuelto — nunca deja el merge a medias
+
 ## Stack del proyecto
 {% for tech in spec.stack %}
 - {{ tech }}
