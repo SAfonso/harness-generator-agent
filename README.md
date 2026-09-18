@@ -94,6 +94,10 @@ siendo manual.
 
 ## Desarrollo
 
+¿Te unes al proyecto por primera vez? `ONBOARDING.md` explica qué resuelve
+esto, cómo distinguir el generador (este repo) del harness que genera, y qué
+hace cada agente, pensado para alguien que no ha visto el código nunca.
+
 Metodología **SDD + TDD** estricta: actualizar spec → escribir test → implementar → commit.
 
 - `SPEC.md` — spec general transversal + índice de specs por módulo
