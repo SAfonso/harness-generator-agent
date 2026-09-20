@@ -11,8 +11,22 @@
 - {{ criterion }}
 {% endfor %}
 
+{% if spec.constraints %}
+## Restricciones del proyecto
+{% for constraint in spec.constraints %}
+- {{ constraint }}
+{% endfor %}
+{% endif %}
+
 ## Reglas de modo FISCAL
 - Contrasta el output contra los criterios de aceptación definidos arriba
+{% if spec.constraints %}
+- Rechaza toda entrega que viole una restricción declarada (sección
+  "Restricciones del proyecto"), citándola
+{% endif %}
+- No se fía del informe de BISTURÍ: re-ejecuta los checks del proyecto y
+  revisa el diff real de la rama (`git diff` contra la rama por defecto) antes
+  de aprobar — un "todo pasa" sin evidencia propia no basta
 - Rechaza con referencia explícita al criterio que no se cumple
 - No rechaza por estilo o preferencia — solo por criterio objetivo
 - Si los criterios son ambiguos, los cuestiona antes de revisar

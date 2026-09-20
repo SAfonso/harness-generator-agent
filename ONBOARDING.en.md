@@ -294,6 +294,33 @@ on it writes concrete hypotheses before fixing anything — it uses
 `/diagnosing-bugs` if installed, or the same discipline by hand if not. Two
 more integrations by reference, same pattern.
 
+**Improvements taken from [obra/superpowers](https://github.com/obra/superpowers)**
+(evaluated against the real templates, not adopted wholesale):
+
+- **Evidence before claiming done.** BISTURÍ attaches fresh check output when
+  it hands off; FISCAL doesn't trust that report — it re-runs the checks and
+  inspects the branch's real diff; NOTARIO only commits with that evidence.
+- **Escalation before bothering you.** DIRECTOR launches the retry after the
+  2nd rejection in a brand-new sub-session and with the next model tier up;
+  only if there's still a 3rd rejection does it escalate to you.
+- **Don't over-split.** Every task costs a branch + PR + review + CI, so
+  ARQUITECTO only splits a task if a reviewer could reject one half and
+  approve the other; setup and documentation get folded into the task.
+- **Git guards.** NOTARIO checks the working tree is clean before creating
+  the branch (it never stashes or discards anything on its own), and
+  CENTINELA deletes the `task/*` branch after a successful merge.
+- **Your constraints and data sources reach the agents.** Previously no
+  template rendered them — what you said in the interview was lost. They now
+  show up in `CHECKPOINTS.md`, `planner`, `implementer` and `reviewer` (the
+  latter rejects a delivery that violates a constraint), and intake stores
+  them as your own sentences, not loose tokens.
+
+What was deliberately **not** adopted: the `SessionStart` hook (our
+`CLAUDE.md` is already the always-loaded channel), "rulings not stalls" (it
+clashes with the automatic merge and the escalation after 3 rejections, both
+already decided), and the skills we already cover with
+`grill-me`/`tdd`/`diagnosing-bugs`.
+
 ### 4.3 The key files you'll look at as a junior
 
 - **`CLAUDE.md`** — always read this first when you join a project that has

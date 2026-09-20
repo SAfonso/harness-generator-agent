@@ -7,6 +7,21 @@
 {% for criterion in spec.acceptance_criteria %}
 - {{ criterion }}
 {% endfor %}
+{% if spec.constraints %}
+
+## Restricciones
+Ninguna tarea puede violarlas:
+{% for constraint in spec.constraints %}
+- {{ constraint }}
+{% endfor %}
+{% endif %}
+{% if spec.data_sources %}
+
+## Fuentes de datos
+{% for source in spec.data_sources %}
+- {{ source }}
+{% endfor %}
+{% endif %}
 
 ## Reglas del harness
 {% for rule in spec.rules %}

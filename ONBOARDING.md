@@ -283,6 +283,33 @@ hipótesis concretas antes de arreglar — usa `/diagnosing-bugs` si está
 instalada, o el mismo criterio a mano si no. Dos integraciones más por
 referencia, mismo patrón.
 
+**Mejoras tomadas de [obra/superpowers](https://github.com/obra/superpowers)**
+(evaluadas contra las plantillas reales, no adoptadas en bloque):
+
+- **Evidencia antes de dar algo por hecho.** BISTURÍ adjunta la salida fresca
+  de los checks al entregar; FISCAL no se fía de ese informe — re-ejecuta los
+  checks e inspecciona el diff real de la rama; NOTARIO solo commitea con esa
+  evidencia.
+- **Escalada antes de molestarte.** DIRECTOR lanza el reintento tras el 2º
+  rechazo en una sub-sesión nueva y con el tier de modelo inmediatamente
+  superior; solo si aun así hay un 3er rechazo te escala a ti.
+- **No sobre-dividir.** Cada tarea cuesta rama + PR + revisión + CI, así que
+  ARQUITECTO parte una tarea solo si un reviewer podría rechazar una mitad y
+  aprobar la otra; setup y documentación se pliegan dentro de la tarea.
+- **Guardas de git.** NOTARIO comprueba que el árbol de trabajo esté limpio
+  antes de crear la rama (nunca hace `stash` ni descarta nada por su cuenta) y
+  CENTINELA borra la rama `task/*` tras un merge correcto.
+- **Tus restricciones y fuentes de datos llegan a los agentes.** Antes no las
+  renderizaba ninguna plantilla — lo que contabas en la entrevista se perdía.
+  Ahora aparecen en `CHECKPOINTS.md`, `planner`, `implementer` y `reviewer`
+  (este último rechaza una entrega que viole una restricción), y el intake las
+  guarda como tus propias frases, no como tokens sueltos.
+
+Lo que **no** se adoptó, a propósito: el hook de `SessionStart` (nuestro
+`CLAUDE.md` ya es el canal siempre cargado), "rulings not stalls" (choca con el
+merge automático y la escalada tras 3 rechazos, ya decididos) y las skills que
+ya cubrimos con `grill-me`/`tdd`/`diagnosing-bugs`.
+
 ### 4.3 Los ficheros clave que vas a mirar como junior
 
 - **`CLAUDE.md`** — léelo siempre primero al entrar a un proyecto con este

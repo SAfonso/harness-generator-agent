@@ -1,5 +1,7 @@
 """intake_agent — non-interactive analysis of the user's raw input."""
 
+import re
+
 from src.config import LLM_RECOMMENDATIONS, PROJECT_TYPES  # noqa: F401
 from src.models.harness_spec import HarnessSpec, InspectionResult, IntakeResult, LLMConfig
 from src.tools.assess_input import DIMENSIONS, assess_input
@@ -9,7 +11,10 @@ _STACK_TOKENS = [
     "node", "django", "flask", "kafka", "s3",
 ]
 _DATA_SOURCE_TOKENS = ["s3", "kafka", "csv", "base de datos", "api", "fichero"]
-_CONSTRAINT_TOKENS = ["sin", "límite", "restricción", "rate limit", "no tengo"]
+_CONSTRAINT_OPENERS = ("sin ", "no tengo", "no puedo", "no hay")
+_CONSTRAINT_MARKERS = (
+    "límite", "restricción", "restricciones", "limitación", "limitaciones", "rate limit",
+)
 _DELIVERABLE_TOKENS = ["script", "informe", "endpoint", "api", "web", "cli"]
 _TIME_TOKENS = ["días", "horas", "semanas", "hackathon"]
 
@@ -34,6 +39,16 @@ def _detect_project_type(text: str) -> str:
                 scores[ptype] += 1
     best = max(scores, key=lambda k: scores[k])
     return best if scores[best] > 0 else "other"
+
+
+def _detect_constraints(text: str) -> list[str]:
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    constraints: list[str] = []
+    for sentence in sentences:
+        lowered = sentence.lower()
+        if lowered.startswith(_CONSTRAINT_OPENERS) or any(m in lowered for m in _CONSTRAINT_MARKERS):
+            constraints.append(sentence)
+    return constraints
 
 
 def _detect_acceptance_criteria(text: str) -> list[str]:
@@ -102,7 +117,7 @@ def run_intake(text: str, mode: str, inspection: InspectionResult | None = None)
         description=text,
         stack=stack,
         data_sources=_present(_DATA_SOURCE_TOKENS, text_lower),
-        constraints=_present(_CONSTRAINT_TOKENS, text_lower),
+        constraints=_detect_constraints(text),
         acceptance_criteria=_detect_acceptance_criteria(text_lower),
         deliverable=", ".join(_present(_DELIVERABLE_TOKENS, text_lower)),
         time_available=", ".join(_present(_TIME_TOKENS, text_lower)),

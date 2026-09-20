@@ -72,6 +72,19 @@ cero (v1), sin ningún paso adicional.
 Las 7 dimensiones están cubiertas (por respuesta explícita o por inferencia
 razonada y documentada).
 
+## Captura de `constraints` (v2)
+
+`HarnessSpec.constraints` guarda las **frases literales del usuario** que
+declaran una restricción, no tokens sueltos: antes se guardaba `["sin"]`, que
+no informa a nadie — y ahora `CHECKPOINTS.md` y los agentes renderizan esta
+lista (`specs/templates.md`), así que tiene que ser legible. Una frase cuenta
+como restricción si **empieza por** `sin `, `no tengo`, `no puedo` o `no hay`,
+o **contiene** `límite`, `restricción`/`restricciones`, `limitación`/
+`limitaciones` o `rate limit`. Una frase como "...procesa 1000 registros sin
+errores." no cuenta (el `sin` está en medio de un criterio de aceptación, no
+abre una restricción). Se conserva el texto original, con su mayúscula y su
+punto final.
+
 ## Reglas de modo PROFESOR
 
 ```

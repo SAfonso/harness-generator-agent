@@ -117,3 +117,45 @@ anteriores: delegar en una skill dedicada, no reimplementar su lógica.
   2-3 hipótesis concretas de la causa antes de arreglar nada — nunca probar
   a ciegas. Recomienda `/diagnosing-bugs` si está instalada; si no, aplica el
   mismo criterio a mano: repro primero, hipótesis después, nunca al revés.
+
+## v2 — mejoras tomadas de obra/superpowers
+
+Evaluadas contra las plantillas reales (no adoptadas en bloque: el hook de
+`SessionStart`, "rulings not stalls" y las skills que ya cubrimos con
+`grill-me`/`tdd`/`diagnosing-bugs` quedaron fuera a propósito). Solo se
+adopta lo que cubre un hueco verificado:
+
+- **Evidencia antes de dar algo por hecho** (`verification-before-completion`):
+  - `implementer.md.j2` (BISTURÍ): antes de entregar, corre los checks del
+    proyecto (tests) y adjunta la salida fresca en su informe — nunca
+    "debería pasar". Un bug corregido se verifica contra el síntoma original.
+  - `reviewer.md.j2` (FISCAL): no se fía del informe de BISTURÍ — re-ejecuta
+    los checks e inspecciona el diff real de la rama antes de aprobar.
+  - `integrator.md.j2` (NOTARIO): solo commitea con esa evidencia fresca; sin
+    evidencia no hay commit.
+- **Escalada antes de molestar al humano** (`subagent-driven-development`):
+  `leader.md.j2` (DIRECTOR) lanza el reintento tras el 2º rechazo en una
+  sub-sesión nueva y con el tier de modelo inmediatamente superior antes de
+  escalar al usuario en el 3º (`SPEC.md#flujo-de-ejecución-del-harness-generado`).
+- **Tamaño mínimo de tarea** (`writing-plans`): `planner.md.j2` (ARQUITECTO)
+  gana una cota inferior — cada tarea cuesta rama + PR + revisión + CI, así
+  que no se sobre-divide: la unidad más pequeña que merece su propia revisión;
+  el setup, la configuración y la documentación que solo sirven a una tarea se
+  pliegan dentro de ella (una tarea de documentación propia solo si documentar
+  es el entregable en sí). Sustituye la antigua regla "no mezcla documentar".
+- **Guardas de NOTARIO/CENTINELA** (`using-git-worktrees`,
+  `finishing-a-development-branch`): NOTARIO comprueba que el árbol de
+  trabajo está limpio antes de crear la rama (`git status --porcelain`) y, si
+  hay cambios ajenos a la tarea, para y avisa al leader — nunca hace stash,
+  checkout forzado ni descarta nada por su cuenta. CENTINELA borra la rama
+  `task/{id}-slug` (remota y local) tras un merge correcto. Los worktrees
+  completos quedan fuera de alcance.
+- **Restricciones y fuentes de datos llegan a los agentes** (hallazgo propio,
+  inspirado en el "Global Constraints" de `writing-plans`): hasta ahora
+  `spec.constraints` y `spec.data_sources` no las renderizaba ninguna
+  plantilla, así que lo que el usuario contaba en la entrevista sobre ellas no
+  llegaba a ningún agente. `CHECKPOINTS.md.j2`, `planner.md.j2`,
+  `implementer.md.j2` y `reviewer.md.j2` renderizan `## Restricciones` (y las
+  tres primeras también `## Fuentes de datos`), cada sección **solo si hay
+  contenido** (sin cabeceras vacías). FISCAL rechaza una entrega que viole una
+  restricción declarada.

@@ -23,7 +23,12 @@ Orquesta la ejecución del harness. No decide sobre diseño — coordina sin ent
   media → intermedio, baja → económico
 - Supervisa que solo hay una tarea en in_progress
 - Si reviewer rechaza → evalúa si es fallo de implementación o diseño
-- Si fallo de implementación → relanza implementer
+- Si fallo de implementación → relanza implementer. El reintento tras el 2º
+  rechazo (el último antes del límite) se lanza en una **sub-sesión nueva** —no
+  reanuda la anterior, para no anclarse en un enfoque equivocado— y con el
+  **tier** de modelo inmediatamente superior (baja → media, media → alta; alta
+  ya es el máximo, solo cambia la sesión). Registra la decisión en el ledger.
+  Si aun así hay un 3er rechazo, escala al usuario
 - Si fallo de diseño → escala al usuario con propuesta de cambio
 - Máximo de rechazos antes de escalar: 3
 

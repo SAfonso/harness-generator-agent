@@ -112,7 +112,7 @@ Metodología **SDD + TDD** estricta: actualizar spec → escribir test → imple
 - `CLAUDE.md` — reglas generales y tabla de redirección por módulo
 
 ```bash
-python3 -m pytest tests/ -q     # 83 tests
+python3 -m pytest tests/ -q     # 109 tests
 ```
 
 ## Estado
@@ -121,7 +121,7 @@ v1 funcional: pipeline completo de extremo a extremo (intake → analysis →
 generator → validator). v2 en marcha: empaquetado (pip + skill de Claude Code),
 modo brownfield (`inspect_project` + confirmación en vez de entrevista desde
 cero) y auditoría de salud del proyecto (git/CI/tests/docs → tareas del
-backlog + recomendación de `/code-review`) ya implementados, 83 tests en verde.
+backlog + recomendación de `/code-review`) ya implementados, 109 tests en verde.
 Pendiente: tool `update_spec`, clasificación por LLM en vez de keywords,
 inferir el resto de dimensiones (`data_sources`, `constraints`,
 `acceptance_criteria`, `deliverable`, `time_available`) en brownfield cuando

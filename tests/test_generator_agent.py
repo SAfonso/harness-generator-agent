@@ -208,6 +208,98 @@ def test_feature_list_tasks_are_atomic_with_complexity(tmp_path: Path):
     assert "descompon" in titles
 
 
+def _agent_file(tmp_path: Path, name: str) -> str:
+    return (tmp_path / ".claude" / "agents" / f"{name}.md").read_text(encoding="utf-8").lower()
+
+
+def test_implementer_requires_fresh_evidence_before_delivering(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "implementer")
+    assert "evidencia" in content
+    assert "debería pasar" in content  # citado como lo que nunca se acepta
+
+
+def test_reviewer_does_not_trust_the_implementers_report(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "reviewer")
+    assert "no se fía" in content
+    assert "diff" in content
+
+
+def test_integrator_only_commits_with_fresh_evidence(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "integrator")
+    assert "evidencia" in content
+
+
+def test_leader_escalates_model_tier_with_a_fresh_session_before_the_user(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "leader")
+    assert "sub-sesión nueva" in content
+    assert "tier" in content
+
+
+def test_planner_has_a_lower_bound_on_task_size(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "planner")
+    assert "sobre-dividir" in content
+    assert "no mezcla planificar, implementar y documentar" not in content
+
+
+def test_integrator_checks_for_a_clean_working_tree_before_branching(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "integrator")
+    assert "git status --porcelain" in content
+    assert "stash" in content  # solo para prohibirlo
+
+
+def test_watchman_deletes_the_task_branch_after_a_successful_merge(tmp_path: Path):
+    run_generator(_make_complete_spec(), tmp_path)
+
+    content = _agent_file(tmp_path, "watchman")
+    assert "borra la rama" in content
+
+
+def test_constraints_and_data_sources_reach_checkpoints_and_agents(tmp_path: Path):
+    spec = _make_complete_spec(
+        constraints=["Sin acceso a internet."],
+        data_sources=["postgres"],
+    )
+
+    run_generator(spec, tmp_path)
+
+    checkpoints = (tmp_path / "CHECKPOINTS.md").read_text(encoding="utf-8")
+    assert "## Restricciones" in checkpoints
+    assert "Sin acceso a internet." in checkpoints
+    assert "## Fuentes de datos" in checkpoints
+    assert "postgres" in checkpoints
+
+    for agent in ("planner", "implementer", "reviewer"):
+        assert "sin acceso a internet." in _agent_file(tmp_path, agent), agent
+    for agent in ("planner", "implementer"):
+        assert "postgres" in _agent_file(tmp_path, agent), agent
+
+    assert "restricción declarada" in _agent_file(tmp_path, "reviewer")
+
+
+def test_empty_constraints_and_data_sources_leave_no_empty_headings(tmp_path: Path):
+    spec = _make_complete_spec(constraints=[], data_sources=[])
+
+    run_generator(spec, tmp_path)
+
+    checkpoints = (tmp_path / "CHECKPOINTS.md").read_text(encoding="utf-8")
+    assert "## Restricciones" not in checkpoints
+    assert "## Fuentes de datos" not in checkpoints
+    for agent in ("planner", "implementer", "reviewer"):
+        assert "## restricciones" not in _agent_file(tmp_path, agent), agent
+
+
 def test_feature_list_includes_a_task_per_audit_finding(tmp_path: Path):
     import json
 

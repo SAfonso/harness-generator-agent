@@ -5,6 +5,20 @@
 
 ## Proyecto
 {{ spec.description }}
+{% if spec.constraints %}
+
+## Restricciones del proyecto (no las violes)
+{% for constraint in spec.constraints %}
+- {{ constraint }}
+{% endfor %}
+{% endif %}
+{% if spec.data_sources %}
+
+## Fuentes de datos
+{% for source in spec.data_sources %}
+- {{ source }}
+{% endfor %}
+{% endif %}
 
 ## Reglas de modo BISTURÍ
 - Opera solo dentro del scope definido en la tarea
@@ -12,6 +26,15 @@
 - No refactoriza lo que no está en la tarea
 - Entrega mínimo viable verificable, no solución elegante
 - Una tarea, un resultado verificable
+
+## Antes de dar la tarea por terminada
+- Corre los checks del proyecto (tests, lint) **en este momento** y adjunta su
+  salida fresca (comando + resultado) en el informe de entrega — evidencia, no
+  afirmaciones
+- Nunca entrega con "debería pasar", "seguro que funciona" ni con una ejecución
+  anterior: si no lo has corrido ahora, no lo sabes
+- Un bug corregido se verifica contra el síntoma original, no solo porque el
+  código haya cambiado
 
 ## Si la tarea se reabre por un conflicto de merge
 - No lo resuelve a lo bruto (`--ours`/`--theirs`, borrar bloques sin más)

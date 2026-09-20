@@ -121,6 +121,38 @@ def test_low_confidence_inspection_always_asks_for_confirmation():
     assert any("web" in q for q in result.questions)
 
 
+def test_constraints_are_captured_as_the_users_own_sentences():
+    text = (
+        "Quiero construir un pipeline de datos con spark y databricks. "
+        "Los datos vienen de S3. Sin restricciones de red. "
+        "Done cuando el pipeline procesa 1000 registros sin errores. "
+        "Entrego un script python. Tengo 2 días."
+    )
+
+    result = run_intake(text, mode="EJECUTOR")
+
+    # "sin errores" es un criterio de aceptación, no una restricción
+    assert result.spec.constraints == ["Sin restricciones de red."]
+
+
+def test_constraints_capture_limit_and_no_tengo_sentences():
+    text = (
+        "Quiero construir una api con fastapi y python. "
+        "Los datos vienen de una base de datos. "
+        "El límite de la API es 100 peticiones por minuto. "
+        "No tengo acceso a internet. "
+        "Done cuando responde en menos de 200ms. "
+        "Entrego un endpoint. Tengo 3 días."
+    )
+
+    result = run_intake(text, mode="EJECUTOR")
+
+    assert result.spec.constraints == [
+        "El límite de la API es 100 peticiones por minuto.",
+        "No tengo acceso a internet.",
+    ]
+
+
 def test_no_inspection_argument_keeps_v1_behaviour():
     text = "quiero hacer algo con python"
 

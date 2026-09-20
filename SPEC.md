@@ -118,6 +118,19 @@ DIRECTOR:
      ciclo devolviendo el control a FISCAL con el `failure_context` de
      `IntegrationReport` adjunto — nunca relanza BISTURÍ a ciegas ni repite la
      tarea desde cero.
+   - **Escalada de modelo antes de escalar al humano** (v2, inspirado en
+     `subagent-driven-development` de obra/superpowers): el reintento que
+     sigue al **2º rechazo** (el último antes del límite de 3) se lanza en
+     una sub-sesión **nueva** —no reanuda la anterior, para no anclarse en un
+     enfoque equivocado— y con el tier de modelo inmediatamente superior
+     (`baja→media`, `media→alta`; `alta` ya es el máximo, solo cambia la
+     sesión). Si aun así hay un 3er rechazo, escala al usuario. DIRECTOR
+     registra la decisión en el ledger.
+   - **Evidencia antes de dar algo por hecho** (v2, `verification-before-
+     completion`): BISTURÍ adjunta la salida fresca de los checks del
+     proyecto al entregar; FISCAL no se fía de ese informe — re-ejecuta los
+     checks e inspecciona el diff real de la rama antes de aprobar; NOTARIO
+     solo commitea con esa evidencia.
 4. Al cerrar (integrada o escalada), la sub-sesión devuelve un `TaskCloseOut` a
    DIRECTOR, que lo añade a `progress/ledger.json` (resumen destilado, nunca el
    log crudo) y actualiza el `status` de la tarea en `feature_list.json`.
