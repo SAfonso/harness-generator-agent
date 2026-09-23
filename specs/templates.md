@@ -159,3 +159,32 @@ adopta lo que cubre un hueco verificado:
   tres primeras también `## Fuentes de datos`), cada sección **solo si hay
   contenido** (sin cabeceras vacías). FISCAL rechaza una entrega que viole una
   restricción declarada.
+
+## v2 — cabecera de subagente y entrada por el leader
+
+Motivado por un error real (`errors/templates.md`): las plantillas de agente no
+llevaban la cabecera YAML que Claude Code exige para registrar un fichero de
+`.claude/agents/` como subagente, así que los agentes generados existían pero
+nunca se podían invocar.
+
+- **Cabecera obligatoria.** Todo fichero `agents/*.md.j2` que se genera dentro
+  del harness empieza con un bloque frontmatter con exactamente dos campos:
+  - `name`: `{{ agent.name }}` (el nombre interno del rol, p. ej. `implementer`)
+  - `description`: `{{ agent.scope }}` — el `scope` del `AgentRole`, que ya
+    describe cuándo usar al agente. Nunca vacío.
+- **Sin `model`.** La cabecera nunca fija un modelo: el leader lo decide por
+  tarea según su `complejidad` (alta → potente, media → intermedio, baja →
+  económico). Un modelo por defecto en el fichero pisaría esa decisión.
+- **Sin `tools`.** No se añade: los subagentes heredan las del proyecto. Si
+  `AgentRole.tools` llegara a usarse, es una tarea aparte.
+- **Todo pasa por el leader.** `CLAUDE.md.j2` incluye una sección
+  `## Cómo trabajar` que ordena delegar en el leader **cualquier instrucción
+  nueva del usuario** que implique cambiar el proyecto (no las preguntas
+  puramente informativas), en ambos modos (EJECUTOR y PROFESOR).
+- **El leader entrevista antes de planificar.** `leader.md.j2` añade la
+  sección `## Instrucción nueva del usuario`: antes de crear tareas, hace las
+  preguntas al estilo PROFESOR (comportamiento esperado, casos límite,
+  restricciones; sin aceptar vaguedad ni rellenar huecos por su cuenta),
+  escribe o actualiza la spec donde el proyecto ya tenga esa convención, y solo
+  entonces pasa el objetivo al planner para que lo descomponga en tareas
+  atómicas con complejidad. Nunca asigna una tarea sin spec detrás.

@@ -391,3 +391,54 @@ def test_generator_includes_tester_for_agent_project(tmp_path: Path):
     run_generator(spec, tmp_path)
 
     assert (tmp_path / ".claude" / "agents" / "tester.md").exists()
+
+
+def test_every_agent_file_has_subagent_frontmatter_with_name_and_description(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    for role in spec.agent_roles:
+        content = (tmp_path / ".claude" / "agents" / f"{role.name}.md").read_text(
+            encoding="utf-8"
+        )
+        assert content.startswith("---\n"), role.name
+        header = content.split("---\n")[1]
+        assert f"name: {role.name}\n" in header, role.name
+        assert f"description: {role.scope}\n" in header, role.name
+
+
+def test_agent_frontmatter_never_fixes_a_model(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    for role in spec.agent_roles:
+        header = (tmp_path / ".claude" / "agents" / f"{role.name}.md").read_text(
+            encoding="utf-8"
+        ).split("---\n")[1]
+        assert "model:" not in header, role.name
+
+
+def test_claude_md_routes_new_instructions_through_the_leader(tmp_path: Path):
+    for mode in ("EJECUTOR", "PROFESOR"):
+        spec = _make_complete_spec(mode=mode)
+
+        run_generator(spec, tmp_path)
+
+        content = (tmp_path / "CLAUDE.md").read_text(encoding="utf-8")
+        assert "## Cómo trabajar" in content, mode
+        assert "leader" in content.split("## Cómo trabajar")[1].split("##")[0], mode
+
+
+def test_leader_interviews_before_planning_a_new_instruction(tmp_path: Path):
+    spec = _make_complete_spec()
+
+    run_generator(spec, tmp_path)
+
+    content = _agent_file(tmp_path, "leader")
+    assert "## instrucción nueva del usuario" in content
+    section = content.split("## instrucción nueva del usuario")[1]
+    assert "preguntas" in section
+    assert "spec" in section
+    assert "planner" in section
